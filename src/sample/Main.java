@@ -44,115 +44,40 @@ public class Main extends Application {
     public Timeline breakPeriodTimeline;
     public Timeline workPeriodTimeLine;
 
+    public Label willWorkFor = new Label();
+    public TextField workMinutesText = new TextField();
+    public Label minutes01Lbl = new Label();
+
+    public Label breakfor = new Label();
+    public TextField breakMinutesText = new TextField();
+    public Label minutes02Lbl = new Label();
+    public Label setOpacityTo = new Label();
+    public TextField opacityText = new TextField();
+    public Label percentLbl = new Label();
 
     @Override
     public void start(Stage formStage) throws Exception {
-//        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-
 
         GridPane userInputs = new GridPane();
         userInputs.setGridLinesVisible(false);
 
-        /* i will work for */
-        Label workfor = new Label("I will work for ");
+        makeFormFields();
 
-        /* this many minutes*/
-        TextField workMinutesText = new TextField("25");
-        workMinutesText.setMaxWidth(80);
-        workMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("work minutes text changed");
-
-            String onlyDigits = newValue.replaceAll("\\D+", "");
-
-            onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
-            System.out.println(onlyDigits);
-
-            int _length = onlyDigits.length();
-
-            if (_length > 0 && _length < 4) {
-                workForMinuts = Long.parseLong(onlyDigits);
-            } else {
-                onlyDigits = "0";
-            }
-
-            workMinutesText.setText(onlyDigits);
-        });
-
-        /* minutes */
-        Label minutes = new Label(" minutes");
-
-
-
-
-
-        /*i will break for */
-        Label breakfor = new Label("I will break for ");
-
-        /* this many */
-        final TextField breakMinutesText = new TextField("10");
-        breakMinutesText.setMaxWidth(80);
-        breakMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("break minutes text changed");
-
-            String onlyDigits = newValue.replaceAll("\\D+", "");
-            onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
-            int _length = onlyDigits.length();
-
-            if (_length > 0 && _length < 3) {
-                breakForMinutes = Long.parseLong(onlyDigits);
-                System.out.println(breakForMinutes);
-            } else {
-                onlyDigits = "0";
-            }
-
-            breakMinutesText.setText(onlyDigits);
-        });
-        /* minutes */
-        Label minutes2 = new Label(" minutes");
-
-
-
-
-
-        /* set opacity to */
-        Label setOpacityTo = new Label("Set opacity to ");
-
-        TextField opacityText = new TextField("80");
-        opacityText.setMaxWidth(80);
-        opacityText.textProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("opacityText field");
-
-            String _digits = newValue.replaceAll("\\D+", "");
-            int _length = _digits.length();
-
-            if (_length > 0 && _length < 4) {
-                opacity = Double.parseDouble(_digits) / 100.00;
-            } else {
-                _digits = "0";
-            }
-            opacityText.setText(_digits);
-        });
-
-        /* % */
-        Label percent = new Label(" %");
-
-
-
-
+        /* position form fields */
         /* row 1*/
-        userInputs.add(workfor, 1, 1);
+        userInputs.add(willWorkFor, 1, 1);
         userInputs.add(workMinutesText, 5, 1);
-        userInputs.add(minutes, 6, 1);
+        userInputs.add(minutes01Lbl, 6, 1);
 
         /* row 2*/
         userInputs.add(breakfor, 1, 2);
         userInputs.add(breakMinutesText, 5, 2);
-        userInputs.add(minutes2, 6, 2);
+        userInputs.add(minutes02Lbl, 6, 2);
 
         /* row 3 */
         userInputs.add(setOpacityTo, 1, 3);
         userInputs.add(opacityText, 5, 3);
-        userInputs.add(percent, 6, 3);
+        userInputs.add(percentLbl, 6, 3);
 
 
         Scene scene = new Scene(userInputs, 500, 500);
@@ -180,6 +105,83 @@ public class Main extends Application {
         formStage.show();
     }
 
+    public void makeFormFields() {
+        /* i will work for */
+        willWorkFor.setText("I will work for ");
+
+        /* this many minutes01Lbl*/
+        workMinutesText.setText("25");
+        workMinutesText.setMaxWidth(80);
+        workMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println("work minutes01Lbl text changed");
+
+            String onlyDigits = newValue.replaceAll("\\D+", "");
+
+            onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
+            System.out.println(onlyDigits);
+
+            int _length = onlyDigits.length();
+
+            if (_length > 0 && _length < 4) {
+                workForMinuts = Long.parseLong(onlyDigits);
+            } else {
+                onlyDigits = "0";
+            }
+
+            workMinutesText.setText(onlyDigits);
+        });
+
+        /* minutes01Lbl */
+        minutes01Lbl.setText(" minutes");
+
+        /*i will break for */
+        breakfor.setText("I will break for ");
+
+        /* break minutes, input */
+        breakMinutesText.setText("10");
+        breakMinutesText.setMaxWidth(80);
+        breakMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println("break minutes text changed");
+
+            String onlyDigits = newValue.replaceAll("\\D+", "");
+            onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
+            int _length = onlyDigits.length();
+
+            if (_length > 0 && _length < 3) {
+                breakForMinutes = Long.parseLong(onlyDigits);
+                System.out.println(breakForMinutes);
+            } else {
+                onlyDigits = "0";
+            }
+
+            breakMinutesText.setText(onlyDigits);
+        });
+        /* minutes */
+        minutes02Lbl.setText(" minutes");
+
+        /* set opacity to */
+        setOpacityTo.setText("Set opacity to ");
+
+        /* opacity input */
+        opacityText.setText("80");
+        opacityText.setMaxWidth(80);
+        opacityText.textProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println("opacityText field");
+
+            String _digits = newValue.replaceAll("\\D+", "");
+            int _length = _digits.length();
+
+            if (_length > 0 && _length < 4) {
+                opacity = Double.parseDouble(_digits) / 100.00;
+            } else {
+                _digits = "0";
+            }
+            opacityText.setText(_digits);
+        });
+
+        /* % */
+        percentLbl.setText(" %");
+    }
 
     public void makeBreakScreens() {
         System.out.println("makeBreakScreens()");
@@ -190,8 +192,6 @@ public class Main extends Application {
             System.out.println("foreach screen");
             timeoutStages.add(setUpBreakStages("id-" + screenCount--, s));
         });
-
-//        makeAppContainer();
     }
 
     public void makeAppContainer() {
@@ -205,12 +205,9 @@ public class Main extends Application {
 
         stage.show();
 
-//        hideBreakPeriodStages();
-
         new Timeline(new KeyFrame(
                 Duration.millis(250),
                 e -> hideBreakPeriodStages())).play();
-
     }
 
 
@@ -279,44 +276,39 @@ public class Main extends Application {
 
     public void makeTimers() {
 
+        /* show break stages */
         breakPeriodTimeline = new Timeline(new KeyFrame(Duration.millis(breakForMinutes),
             even-> {
                 System.out.println("calling hide");
                 hideBreakPeriodStages();
             }));
 
-
+        /* hide break stages */
         workPeriodTimeLine =  new Timeline(new KeyFrame(Duration.millis(workForMinuts),
             event -> {
                 System.out.println("calling show");
                 showBreakPeriodStages();
             }));
 
-        /* parse milliseconds and display as count down clock */
+        /* update count down clock */
         displayTimer = new Timeline(new KeyFrame(
                 Duration.millis(250),
                 event -> {
                     timerText -= 250L;
                     Long _minutes = TimeUnit.MILLISECONDS.toMinutes(timerText);
-                    _minutes %= 60;
+                        _minutes %= 60;
                     Long _seconds = TimeUnit.MILLISECONDS.toSeconds(timerText);
-                    _seconds %= 60;
+                        _seconds %= 60;
                     Long _millis = TimeUnit.MILLISECONDS.toMillis(timerText);
-                    _millis %= 1000;
+                        _millis %= 1000;
 
                     String minutesText = _minutes.toString();
                     String secondsText = _seconds.toString();
                     String millisText = _millis.toString();
 
-                    if (minutesText.length() == 1) {
-                        minutesText = "0" + minutesText;
-                    }
-                    if (secondsText.length() == 1) {
-                        secondsText = "0" + secondsText;
-                    }
-                    if (millisText.length() == 1) {
-                        millisText = "0" + millisText;
-                    }
+                    if (minutesText.length() == 1) {minutesText = "0" + minutesText;}
+                    if (secondsText.length() == 1) {secondsText = "0" + secondsText;}
+                    if (millisText.length() == 1) {millisText = "0" + millisText;}
 
                     breakTimerLbl.setText(minutesText + ":" +
                             secondsText + ":" +
