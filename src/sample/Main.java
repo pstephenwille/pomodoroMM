@@ -17,6 +17,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import sun.util.resources.cldr.lt.TimeZoneNames_lt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +41,13 @@ public class Main extends Application {
     public Timeline displayTimer;
 
     public List<Stage> timeoutStages = new ArrayList<Stage>();
+    public Timeline breakPeriodTimeline;
+    public Timeline workPeriodTimeLine;
+
 
     @Override
     public void start(Stage formStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+//        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
 
 
         GridPane userInputs = new GridPane();
@@ -55,7 +59,7 @@ public class Main extends Application {
         /* this many minutes*/
         TextField workMinutesText = new TextField("25");
         workMinutesText.setMaxWidth(80);
-        workMinutesText.textProperty().addListener((obervable, oldValue, newValue) -> {
+        workMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("work minutes text changed");
 
             String onlyDigits = newValue.replaceAll("\\D+", "");
@@ -87,7 +91,7 @@ public class Main extends Application {
         /* this many */
         final TextField breakMinutesText = new TextField("10");
         breakMinutesText.setMaxWidth(80);
-        breakMinutesText.textProperty().addListener((obervable, oldValue, newValue) -> {
+        breakMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("break minutes text changed");
 
             String onlyDigits = newValue.replaceAll("\\D+", "");
@@ -169,6 +173,7 @@ public class Main extends Application {
 
                 makeBreakScreens();
                 makeAppContainer();
+                makeTimers();
             }
         });
         formStage.initStyle(StageStyle.UTILITY);
@@ -218,18 +223,10 @@ public class Main extends Application {
         timerText = breakForMinutes;
 
         timeoutStages.forEach(s -> s.show());
+
         displayTimer.playFromStart();
 
-        Timeline showStages = new Timeline(new KeyFrame(
-                Duration.millis(breakForMinutes),
-                event -> {
-                    System.out.println("calling hide");
-                    hideBreakPeriodStages();
-                }
-        )
-        );
-
-        showStages.play();
+        breakPeriodTimeline.playFromStart();
     }
 
     /* work period */
@@ -239,12 +236,7 @@ public class Main extends Application {
         timeoutStages.forEach(s -> s.hide());
         displayTimer.pause();
 
-        new Timeline(new KeyFrame(
-                Duration.millis(workForMinuts),
-                event -> {
-                    System.out.println("calling show");
-                    showBreakPeriodStages();
-                })).play();
+        workPeriodTimeLine.play();
     }
 
 
@@ -261,40 +253,6 @@ public class Main extends Application {
         if (screen.hashCode() == Screen.getPrimary().hashCode()) {
             breakTimerLbl.setId("breakTimerLbl");
             layout.getChildren().addAll(breakTimerLbl);
-            timerText = breakForMinutes;
-
-            displayTimer = new Timeline(new KeyFrame(
-                    Duration.millis(250),
-                    event -> {
-//                        timerText -= 250L;
-                        Long _minutes = TimeUnit.MILLISECONDS.toMinutes(timerText);
-                            _minutes %= 60;
-                        Long _seconds = TimeUnit.MILLISECONDS.toSeconds(timerText);
-                            _seconds %= 60;
-                        Long _millis = TimeUnit.MILLISECONDS.toMillis(timerText);
-                            _millis %= 1000;
-
-                        String minutesText = _minutes.toString();
-                        String secondsText = _seconds.toString();
-                        String millisText = _millis.toString();
-
-                        if (minutesText.length() == 1) {
-                            minutesText = "0" + minutesText;
-                        }
-                        if (secondsText.length() == 1) {
-                            secondsText = "0" + secondsText;
-                        }
-                        if (millisText.length() == 1) {
-                            millisText = "0" + millisText;
-                        }
-
-                        breakTimerLbl.setText(minutesText + ":" +
-                                secondsText + ":" +
-                                millisText.substring(0, 2));
-                        if (timerText <= 0) {timerText = workForMinuts;}
-                    }));
-            displayTimer.setCycleCount(Timeline.INDEFINITE);
-//            displayTimer.play();
         }
 
         layout.setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ");");
@@ -319,5 +277,52 @@ public class Main extends Application {
         return stage;
     }
 
+    public void makeTimers() {
 
+        breakPeriodTimeline = new Timeline(new KeyFrame(Duration.millis(breakForMinutes),
+            even-> {
+                System.out.println("calling hide");
+                hideBreakPeriodStages();
+            }));
+
+
+        workPeriodTimeLine =  new Timeline(new KeyFrame(Duration.millis(workForMinuts),
+            event -> {
+                System.out.println("calling show");
+                showBreakPeriodStages();
+            }));
+
+        /* parse milliseconds and display as count down clock */
+        displayTimer = new Timeline(new KeyFrame(
+                Duration.millis(250),
+                event -> {
+                    timerText -= 250L;
+                    Long _minutes = TimeUnit.MILLISECONDS.toMinutes(timerText);
+                    _minutes %= 60;
+                    Long _seconds = TimeUnit.MILLISECONDS.toSeconds(timerText);
+                    _seconds %= 60;
+                    Long _millis = TimeUnit.MILLISECONDS.toMillis(timerText);
+                    _millis %= 1000;
+
+                    String minutesText = _minutes.toString();
+                    String secondsText = _seconds.toString();
+                    String millisText = _millis.toString();
+
+                    if (minutesText.length() == 1) {
+                        minutesText = "0" + minutesText;
+                    }
+                    if (secondsText.length() == 1) {
+                        secondsText = "0" + secondsText;
+                    }
+                    if (millisText.length() == 1) {
+                        millisText = "0" + millisText;
+                    }
+
+                    breakTimerLbl.setText(minutesText + ":" +
+                            secondsText + ":" +
+                            millisText.substring(0, 2));
+                    if (timerText <= 0) {timerText = workForMinuts;}
+                }));
+        displayTimer.setCycleCount(Timeline.INDEFINITE);
+    }
 }
