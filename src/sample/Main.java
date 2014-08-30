@@ -3,9 +3,7 @@ package sample;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -17,7 +15,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import sun.util.resources.cldr.lt.TimeZoneNames_lt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +37,8 @@ public class Main extends Application {
 
     public Timeline displayTimer;
 
-    public List<Stage> timeoutStages = new ArrayList<Stage>();
+//    public List<Stage> timeoutStages = new ArrayList<>();
+    public List<BreakPeriodStage> timeoutStages = new ArrayList<>();
     public Timeline breakPeriodTimeline;
     public Timeline workPeriodTimeLine;
 
@@ -109,7 +107,7 @@ public class Main extends Application {
         /* i will work for */
         willWorkFor.setText("I will work for ");
 
-        /* this many minutes01Lbl*/
+        /* this many minutes, input */
         workMinutesText.setText("25");
         workMinutesText.setMaxWidth(80);
         workMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -131,7 +129,7 @@ public class Main extends Application {
             workMinutesText.setText(onlyDigits);
         });
 
-        /* minutes01Lbl */
+        /* minutes */
         minutes01Lbl.setText(" minutes");
 
         /*i will break for */
@@ -190,9 +188,9 @@ public class Main extends Application {
 
         allScreens.forEach(s -> {
             System.out.println("foreach screen");
-            timeoutStages.add(setUpBreakStages("id-" + screenCount--, s));
+            timeoutStages.add(new BreakPeriodStage("id-" + screenCount--, s, opacity, breakTimerLbl));
         });
-    }
+        }
 
     public void makeAppContainer() {
         System.out.println("makeAppContainer()");
@@ -205,6 +203,7 @@ public class Main extends Application {
 
         stage.show();
 
+        /* start app */
         new Timeline(new KeyFrame(
                 Duration.millis(250),
                 e -> hideBreakPeriodStages())).play();
@@ -218,9 +217,7 @@ public class Main extends Application {
 
         /* reset timer */
         timerText = breakForMinutes;
-
-        timeoutStages.forEach(s -> s.show());
-
+        timeoutStages.forEach(s -> s.getStage().show());
         displayTimer.playFromStart();
 
         breakPeriodTimeline.playFromStart();
@@ -230,49 +227,13 @@ public class Main extends Application {
     public void hideBreakPeriodStages() {
         System.out.println("hideBreakPeriodStages()");
 
-        timeoutStages.forEach(s -> s.hide());
+        timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
         workPeriodTimeLine.play();
     }
 
 
-    public Stage setUpBreakStages(final String name, final Screen screen) {
-        System.out.println("setUpBreakStages");
-
-        final Stage stage = new Stage();
-
-        Rectangle2D bounds = screen.getBounds();
-
-        StackPane layout = new StackPane();
-
-        /* display clock on primary monitor */
-        if (screen.hashCode() == Screen.getPrimary().hashCode()) {
-            breakTimerLbl.setId("breakTimerLbl");
-            layout.getChildren().addAll(breakTimerLbl);
-        }
-
-        layout.setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ");");
-
-
-        Scene scene = new Scene(layout,
-                bounds.getWidth(),
-                bounds.getHeight());
-        scene.getStylesheets().add("sample/main.css");
-        scene.setFill(null);
-        stage.setScene(scene);
-
-        stage.initStyle(StageStyle.UNDECORATED);
-        stage.initStyle(StageStyle.TRANSPARENT);
-
-        stage.setX(bounds.getMinX());
-        stage.setY(bounds.getMinY());
-        stage.toFront();
-        stage.initModality(Modality.WINDOW_MODAL);
-
-
-        return stage;
-    }
 
     public void makeTimers() {
 
