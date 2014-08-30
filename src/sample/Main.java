@@ -3,7 +3,8 @@ package sample;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.geometry.Rectangle2D;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -16,45 +17,45 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 public class Main extends Application {
+    Double opacity = 0.8;
+    Long breakForMinutes = 10L;
+    Long workForMinuts = 25L;
+    List<Screen> allScreens;
+    Integer screenCount;
+    Stage appContainter = new Stage();
+    Long timerText = 100L;
+    Label breakTimerLbl = new Label();
+    Timeline displayTimer;
+    List<BreakPeriodStage> timeoutStages = new ArrayList<>();
+    Timeline breakPeriodTimeline;
+    Timeline workPeriodTimeLine;
+    Label willWorkFor = new Label();
+    TextField workMinutesText = new TextField();
+    Label minutes01Lbl = new Label();
+    Label breakfor = new Label();
+    TextField breakMinutesText = new TextField();
+    Label minutes02Lbl = new Label();
+    Label setOpacityTo = new Label();
+    TextField opacityText = new TextField();
+    Label percentLbl = new Label();
+    SystemTray sysTray;
+    TrayIcon trayIcon = null;
+    EventHandler<KeyEvent> hideStagesEvent;
+
     public static void main(String[] args) {
         launch(args);
     }
 
-    public Double opacity = 0.8;
-    public Long breakForMinutes = 10L;
-    public Long workForMinuts = 25L;
-    public List<Screen> allScreens;
-    public Integer screenCount;
-
-    public Long timerText = 100L;
-    public Label breakTimerLbl = new Label();
-
-    public Timeline displayTimer;
-
-//    public List<Stage> timeoutStages = new ArrayList<>();
-    public List<BreakPeriodStage> timeoutStages = new ArrayList<>();
-    public Timeline breakPeriodTimeline;
-    public Timeline workPeriodTimeLine;
-
-    public Label willWorkFor = new Label();
-    public TextField workMinutesText = new TextField();
-    public Label minutes01Lbl = new Label();
-
-    public Label breakfor = new Label();
-    public TextField breakMinutesText = new TextField();
-    public Label minutes02Lbl = new Label();
-    public Label setOpacityTo = new Label();
-    public TextField opacityText = new TextField();
-    public Label percentLbl = new Label();
-
     @Override
-    public void start(Stage formStage) throws Exception {
+    public void start(Stage form) throws Exception {
 
         GridPane userInputs = new GridPane();
         userInputs.setGridLinesVisible(false);
@@ -78,45 +79,47 @@ public class Main extends Application {
         userInputs.add(percentLbl, 6, 3);
 
 
-        Scene scene = new Scene(userInputs, 500, 500);
+        Scene scene = new Scene(userInputs, 400, 200);
         scene.getStylesheets().add
                 (Main.class.getResource("main.css").toExternalForm());
 
 
-        formStage.setScene(scene);
+        form.setScene(scene);
         scene.addEventHandler(KeyEvent.KEY_RELEASED, event ->
         {
-            System.out.println(event);
-            if (event.getCode().toString() == "ESCAPE" || event.getCode().toString() == "ENTER") {
+            if (event.getCode().toString() == "ENTER") {
                 workForMinuts *= 60L * 1000L;
                 breakForMinutes *= 60L * 1000L;
                 timerText = breakForMinutes;
 
-                formStage.close();
+                form.close();
 
+                hideStagesEvent = e -> {
+                    if (e.getCode().toString() == "ESCAPE") {
+                        hideBreakPeriodStages();
+                    }
+                };
+
+                makeSysTrayIcon();
                 makeBreakScreens();
                 makeAppContainer();
                 makeTimers();
             }
         });
-        formStage.initStyle(StageStyle.UTILITY);
-        formStage.show();
+        form.initStyle(StageStyle.UTILITY);
+        form.show();
     }
 
     public void makeFormFields() {
         /* i will work for */
         willWorkFor.setText("I will work for ");
 
-        /* this many minutes, input */
+        /* work minutes, input */
         workMinutesText.setText("25");
-        workMinutesText.setMaxWidth(80);
         workMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("work minutes01Lbl text changed");
-
             String onlyDigits = newValue.replaceAll("\\D+", "");
 
             onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
-            System.out.println(onlyDigits);
 
             int _length = onlyDigits.length();
 
@@ -137,17 +140,16 @@ public class Main extends Application {
 
         /* break minutes, input */
         breakMinutesText.setText("10");
-        breakMinutesText.setMaxWidth(80);
         breakMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("break minutes text changed");
-
             String onlyDigits = newValue.replaceAll("\\D+", "");
+
             onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
+
             int _length = onlyDigits.length();
 
             if (_length > 0 && _length < 3) {
                 breakForMinutes = Long.parseLong(onlyDigits);
-                System.out.println(breakForMinutes);
+
             } else {
                 onlyDigits = "0";
             }
@@ -162,9 +164,8 @@ public class Main extends Application {
 
         /* opacity input */
         opacityText.setText("80");
-        opacityText.setMaxWidth(80);
         opacityText.textProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("opacityText field");
+
 
             String _digits = newValue.replaceAll("\\D+", "");
             int _length = _digits.length();
@@ -181,75 +182,99 @@ public class Main extends Application {
         percentLbl.setText(" %");
     }
 
-    public void makeBreakScreens() {
-        System.out.println("makeBreakScreens()");
-        allScreens = Screen.getScreens();
-        screenCount = allScreens.size();
-
-        allScreens.forEach(s -> {
-            System.out.println("foreach screen");
-            timeoutStages.add(new BreakPeriodStage("id-" + screenCount--, s, opacity, breakTimerLbl));
-        });
-        }
-
-    public void makeAppContainer() {
-        System.out.println("makeAppContainer()");
-        Stage stage = new Stage();
-
-        stage.setMaxWidth(0.0);
-        stage.setMaxHeight(0.0);
-        stage.setOpacity(0.0);
-        stage.initModality(Modality.APPLICATION_MODAL);/* required to allow stage.toFront() */
-
-        stage.show();
-
-        /* start app */
-        new Timeline(new KeyFrame(
-                Duration.millis(250),
-                e -> hideBreakPeriodStages())).play();
-    }
-
-
-
-    /* break period */
-    public void showBreakPeriodStages() {
-        System.out.println("showBreakPeriodStages");
-
-        /* reset timer */
-        timerText = breakForMinutes;
-        timeoutStages.forEach(s -> s.getStage().show());
-        displayTimer.playFromStart();
-
-        breakPeriodTimeline.playFromStart();
-    }
-
     /* work period */
     public void hideBreakPeriodStages() {
-        System.out.println("hideBreakPeriodStages()");
-
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
         workPeriodTimeLine.play();
     }
 
+    public void makeSysTrayIcon() {/* TrayIcon */
+        if (SystemTray.isSupported()) {
+            sysTray = SystemTray.getSystemTray();
+            Image image = Toolkit.getDefaultToolkit().getImage("src/sample/javaIcon.jpg");
 
+            ActionListener listener = e ->
+            {
+                String command = e.getActionCommand();
+
+                if (command == "Restart") {
+                    Platform.runLater(() -> hideBreakPeriodStages());
+                }
+                if (command == "Exit") {
+                    sysTray.remove(trayIcon);/* awt thread */
+
+                    Platform.runLater(() -> {/* fx thread */
+                        timeoutStages.forEach(s -> s.getStage().close());
+                        appContainter.close();
+                    });
+                }
+            };
+
+            MenuItem restart = new MenuItem("Restart");
+            restart.addActionListener(listener);
+
+            MenuItem exit = new MenuItem("Exit");
+            exit.addActionListener(listener);
+
+            PopupMenu popup = new PopupMenu();
+            popup.add(restart);
+            popup.addSeparator();
+            popup.add(exit);
+
+            trayIcon = new TrayIcon(image, "Pomodoro Timer", popup);
+            trayIcon.addActionListener(listener);
+
+            try {
+                sysTray.add(trayIcon);
+            } catch (AWTException except) {
+            }
+        }
+    }
+
+    public void makeBreakScreens() {
+        allScreens = Screen.getScreens();
+        screenCount = allScreens.size();
+
+        allScreens.forEach(s -> timeoutStages.add(
+                new BreakPeriodStage("id-" + screenCount--,
+                                        s,
+                                        opacity,
+                                        breakTimerLbl,
+                                        hideStagesEvent)));
+    }
+
+    public void makeAppContainer() {
+
+        StackPane stackPane = new StackPane();
+        Scene scene = new Scene(stackPane, 0, 0);
+
+        appContainter.setScene(scene);
+        appContainter.setMaxWidth(0.0);
+        appContainter.setMaxHeight(0.0);
+        appContainter.setOpacity(0.0);
+
+        /* required to allow stage.toFront() */
+        appContainter.initModality(Modality.APPLICATION_MODAL);
+
+        appContainter.show();
+
+        /* start app */
+        new Timeline(new KeyFrame(
+                Duration.millis(0),
+                e -> hideBreakPeriodStages()) ).play();
+    }
 
     public void makeTimers() {
 
         /* show break stages */
         breakPeriodTimeline = new Timeline(new KeyFrame(Duration.millis(breakForMinutes),
-            even-> {
-                System.out.println("calling hide");
-                hideBreakPeriodStages();
-            }));
+                even -> hideBreakPeriodStages()));
 
         /* hide break stages */
-        workPeriodTimeLine =  new Timeline(new KeyFrame(Duration.millis(workForMinuts),
-            event -> {
-                System.out.println("calling show");
-                showBreakPeriodStages();
-            }));
+        workPeriodTimeLine = new Timeline(new KeyFrame(Duration.millis(workForMinuts),
+                event -> showBreakPeriodStages()));
 
         /* update count down clock */
         displayTimer = new Timeline(new KeyFrame(
@@ -257,25 +282,45 @@ public class Main extends Application {
                 event -> {
                     timerText -= 250L;
                     Long _minutes = TimeUnit.MILLISECONDS.toMinutes(timerText);
-                        _minutes %= 60;
+                    _minutes %= 60;
                     Long _seconds = TimeUnit.MILLISECONDS.toSeconds(timerText);
-                        _seconds %= 60;
+                    _seconds %= 60;
                     Long _millis = TimeUnit.MILLISECONDS.toMillis(timerText);
-                        _millis %= 1000;
+                    _millis %= 1000;
 
                     String minutesText = _minutes.toString();
                     String secondsText = _seconds.toString();
                     String millisText = _millis.toString();
 
-                    if (minutesText.length() == 1) {minutesText = "0" + minutesText;}
-                    if (secondsText.length() == 1) {secondsText = "0" + secondsText;}
-                    if (millisText.length() == 1) {millisText = "0" + millisText;}
+                    if (minutesText.length() == 1) {
+                        minutesText = "0" + minutesText;
+                    }
+                    if (secondsText.length() == 1) {
+                        secondsText = "0" + secondsText;
+                    }
+                    if (millisText.length() == 1) {
+                        millisText = "0" + millisText;
+                    }
 
                     breakTimerLbl.setText(minutesText + ":" +
                             secondsText + ":" +
                             millisText.substring(0, 2));
-                    if (timerText <= 0) {timerText = workForMinuts;}
+                    if (timerText <= 0) {
+                        timerText = workForMinuts;
+                    }
                 }));
         displayTimer.setCycleCount(Timeline.INDEFINITE);
+    }
+
+    /* break period */
+    public void showBreakPeriodStages() {
+        /* reset timer */
+        timerText = breakForMinutes;
+        timeoutStages.forEach(s -> s.getStage().show());
+        displayTimer.playFromStart();
+
+        breakPeriodTimeline.playFromStart();
+
+        appContainter.toFront();
     }
 }

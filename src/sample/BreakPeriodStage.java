@@ -1,8 +1,10 @@
 package sample;
 
+import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
@@ -18,7 +20,8 @@ public class BreakPeriodStage extends Stage {
 
 
 
-    public BreakPeriodStage(final String name, final Screen screen, Double opacity, Label breakTimerLbl) {
+    public BreakPeriodStage(final String name, final Screen screen, Double opacity,
+                            Label breakTimerLbl, EventHandler hideStagesEvent) {
         System.out.println("BreakPeriodStage.class");
 
 
@@ -43,11 +46,12 @@ public class BreakPeriodStage extends Stage {
 
         scene.getStylesheets().add("sample/main.css");
         scene.setFill(null);
-        stage.setScene(scene);
 
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, hideStagesEvent);
+
+        stage.setScene(scene);
         stage.initStyle(StageStyle.UNDECORATED);
         stage.initStyle(StageStyle.TRANSPARENT);
-
         stage.setX(bounds.getMinX());
         stage.setY(bounds.getMinY());
         stage.toFront();
