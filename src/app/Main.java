@@ -1,4 +1,4 @@
-package sample;
+package app;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -83,6 +83,9 @@ public class Main extends Application {
         scene.addEventHandler(KeyEvent.KEY_RELEASED, enter ->
         {
             if (enter.getCode().toString() == "ENTER") {
+                /* user has submitted the form,
+                * set the values and,
+                * start the app */
                 workForMinuts *= 60L * 1000L;
                 breakForMinutes *= 60L * 1000L;
                 timerText = breakForMinutes;
@@ -183,14 +186,14 @@ public class Main extends Application {
     public void makeSysTrayIcon() {
         if (SystemTray.isSupported()) {
             sysTray = SystemTray.getSystemTray();
-            Image image = Toolkit.getDefaultToolkit().getImage("src/sample/javaIcon.jpg");
+            Image image = Toolkit.getDefaultToolkit().getImage("src/app/javaIcon.jpg");
 
             ActionListener listener = e ->
             {
                 String command = e.getActionCommand();
 
                 if (command == "Restart") {
-                    Platform.runLater(() -> hideBreakPeriodStages());
+                    Platform.runLater(() -> hideBreakPeriodStages());/*fx thread */
                 }
                 if (command == "Exit") {
                     sysTray.remove(trayIcon);/* awt thread */
@@ -203,15 +206,15 @@ public class Main extends Application {
             };
 
             MenuItem restart = new MenuItem("Restart");
-            restart.addActionListener(listener);
+                restart.addActionListener(listener);
 
             MenuItem exit = new MenuItem("Exit");
-            exit.addActionListener(listener);
+                exit.addActionListener(listener);
 
             PopupMenu popup = new PopupMenu();
-            popup.add(restart);
-            popup.addSeparator();
-            popup.add(exit);
+                popup.add(restart);
+                popup.addSeparator();
+                popup.add(exit);
 
             trayIcon = new TrayIcon(image, "Pomodoro Timer", popup);
             trayIcon.addActionListener(listener);
@@ -300,14 +303,12 @@ public class Main extends Application {
 
     /* break period */
     public void showBreakPeriodStages() {
-        System.out.println("show stages");
         /* reset timer */
         timerText = breakForMinutes;
-        timeoutStages.forEach( s ->{s.getStage().show();
-//                                s.getStage().toFront();
-        } );
+        timeoutStages.forEach( s ->s.getStage().show());
+
         /* gets focus to accept 'escape' key presses */
-        Platform.runLater( ()->timeoutStages.get(0).requestFocus() );
+        Platform.runLater( ()->timeoutStages.get(0).getStage().requestFocus() );
 
         displayTimer.playFromStart();
 
@@ -318,8 +319,6 @@ public class Main extends Application {
 
     /* work period */
     public void hideBreakPeriodStages() {
-        System.out.println("hide stages");
-
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 

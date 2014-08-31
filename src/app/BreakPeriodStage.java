@@ -1,4 +1,4 @@
-package sample;
+package app;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
@@ -21,7 +21,7 @@ public class BreakPeriodStage extends Stage {
 
 
     public BreakPeriodStage(final Screen screen, Double opacity,
-                            Label breakTimerLbl, EventHandler hideStagesEvent) {
+                            Label breakTimerLbl, EventHandler escapeStagesEvent) {
 
         setStage(new Stage());
 
@@ -37,15 +37,14 @@ public class BreakPeriodStage extends Stage {
 
         layout.setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ");");
 
-
         Scene scene = new Scene(layout,
-                bounds.getWidth(),
-                bounds.getHeight());
+                                bounds.getWidth(),
+                                bounds.getHeight());
 
-        scene.getStylesheets().add("sample/main.css");
+        scene.getStylesheets().add("app/main.css");
         scene.setFill(null);
 
-        scene.addEventHandler(KeyEvent.KEY_RELEASED, hideStagesEvent);
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, escapeStagesEvent);
 
         stage.setScene(scene);
         stage.initStyle(StageStyle.UNDECORATED);
