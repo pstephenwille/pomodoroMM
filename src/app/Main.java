@@ -8,6 +8,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.PixelReader;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
@@ -55,11 +56,15 @@ public class Main extends Application {
     SystemTray sysTray;
     TrayIcon trayIcon = null;
     Label instructionTxt;
-
-
+    Stage app;
+    String minutesText;
+    String secondsText;
+    String millisText;
 
     @Override
-    public void start(Stage form) throws Exception {
+    public void start(Stage app) throws Exception {
+        this.app = app;
+
         makeFormFields();
 
         GridPane userInputs = new GridPane();
@@ -85,6 +90,8 @@ public class Main extends Application {
         userInputs.add(instructionTxt, 1, 4, 6, 1);
 
 
+
+
         Scene scene = new Scene(userInputs, 400, 200);
         scene.getStylesheets().add
                 (Main.class.getResource("main.css").toExternalForm());
@@ -94,7 +101,7 @@ public class Main extends Application {
             String code = key.getCode().toString().toLowerCase();
 
             if (code.equals("escape") || code.equals("esc")) {
-                form.close();
+                app.close();
             }
             if (code.equals("enter")) {
                 /* user has submitted the form,
@@ -104,18 +111,23 @@ public class Main extends Application {
                 breakForMinutes *= 60L * 1000L;
                 timerText = breakForMinutes;
 
-                form.close();
+                /* leave app container running, to give the stages someting to run in. */
+                app.setMaxWidth(0.0);
+                app.setMaxHeight(0.0);
+                app.setOpacity(0.0);
 
                 makeSysTrayIcon();
-                makeAppContainer();
                 makeBreakScreens();
                 makeTimers();
+                hideBreakPeriodStages();
             }
         });
-        form.setTitle("Pomodoro - multi monitor");
-        form.setScene(scene);
-        form.initStyle(StageStyle.UTILITY);
-        form.show();
+
+
+        app.setTitle("Pomodoro - multi monitor");
+        app.setScene(scene);
+        app.initStyle(StageStyle.UTILITY);
+        app.show();
     }
 
     public void makeFormFields() {
@@ -157,7 +169,6 @@ public class Main extends Application {
 
             if (_length > 0 && _length < 3) {
                 breakForMinutes = Long.parseLong(onlyDigits);
-
             } else {
                 onlyDigits = "0";
             }
@@ -173,9 +184,8 @@ public class Main extends Application {
         /* opacity input */
         opacityText.setText("80");
         opacityText.textProperty().addListener((observable, oldValue, newValue) -> {
-
-
             String _digits = newValue.replaceAll("\\D+", "");
+
             int _length = _digits.length();
 
             if (_length > 0 && _length < 4) {
@@ -189,17 +199,17 @@ public class Main extends Application {
         /* % */
         percentLbl.setText(" %");
 
-        instructionTxt = new Label("Pres Escape to exit, press Enter to start.\nDuring the " +
-                "break period, Escape will restart the cycle.");
+        instructionTxt = new Label("Pres ESCAPE to exit, press ENTER to start.\nDuring the " +
+                "break period, ESCAPE will restart the cycle.");
         instructionTxt.setId("instructionTxt");
     }
-
 
     public void makeSysTrayIcon() {
         if (SystemTray.isSupported()) {
             sysTray = SystemTray.getSystemTray();
             URL imageUrl = Main.class.getResource("javaIcon.jpg");
             Image image = Toolkit.getDefaultToolkit().getImage(imageUrl);
+
 
             ActionListener listener = e ->
             {
@@ -213,7 +223,7 @@ public class Main extends Application {
 
                     Platform.runLater(() -> {/* fx thread */
                         timeoutStages.forEach(s -> s.getStage().close());
-                        appContainter.close();
+                        app.close();
                     });
                 }
             };
@@ -254,26 +264,6 @@ public class Main extends Application {
         });
     }
 
-    public void makeAppContainer() {
-        StackPane stackPane = new StackPane();
-        Scene scene = new Scene(stackPane, 0, 0);
-
-        appContainter.setScene(scene);
-        appContainter.setMaxWidth(0.0);
-        appContainter.setMaxHeight(0.0);
-        appContainter.setOpacity(0.0);
-
-        /* required to allow stage.toFront() */
-        appContainter.initModality(Modality.APPLICATION_MODAL);
-
-        appContainter.show();
-
-        /* start app */
-        new Timeline(new KeyFrame(
-                Duration.millis(250),
-                e -> hideBreakPeriodStages())).play();
-    }
-
     public void makeTimers() {
 
         /* show break stages */
@@ -289,16 +279,13 @@ public class Main extends Application {
                 Duration.millis(250),
                 event -> {
                     timerText -= 250L;
-                    Long _minutes = TimeUnit.MILLISECONDS.toMinutes(timerText);
-                    _minutes %= 60;
-                    Long _seconds = TimeUnit.MILLISECONDS.toSeconds(timerText);
-                    _seconds %= 60;
-                    Long _millis = TimeUnit.MILLISECONDS.toMillis(timerText);
-                    _millis %= 1000;
+                    Long _minutes = TimeUnit.MILLISECONDS.toMinutes(timerText) % 60;
+                    Long _seconds = TimeUnit.MILLISECONDS.toSeconds(timerText) % 60;
+                    Long _millis = TimeUnit.MILLISECONDS.toMillis(timerText) % 1000;
 
-                    String minutesText = _minutes.toString();
-                    String secondsText = _seconds.toString();
-                    String millisText = _millis.toString();
+                    minutesText = _minutes.toString();
+                    secondsText = _seconds.toString();
+                    millisText = _millis.toString();
 
                     if (minutesText.length() == 1) {
                         minutesText = "0" + minutesText;
