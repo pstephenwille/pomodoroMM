@@ -54,7 +54,7 @@ public class Main extends Application {
     Label percentLbl = new Label();
     SystemTray sysTray;
     TrayIcon trayIcon = null;
-    EventHandler<KeyEvent> escapeStagesEvent;
+    Label instructionTxt;
 
 
 
@@ -63,31 +63,40 @@ public class Main extends Application {
         makeFormFields();
 
         GridPane userInputs = new GridPane();
+//        userInputs.setGridLinesVisible(true);
 
         /* position form fields */
         /* row 1*/
-        userInputs.add(willWorkFor, 1, 1);
-        userInputs.add(workMinutesText, 5, 1);
-        userInputs.add(minutes01Lbl, 6, 1);
+        userInputs.add(willWorkFor, 1, 0);
+        userInputs.add(workMinutesText, 5, 0);
+        userInputs.add(minutes01Lbl, 6, 0);
 
         /* row 2*/
-        userInputs.add(breakfor, 1, 2);
-        userInputs.add(breakMinutesText, 5, 2);
-        userInputs.add(minutes02Lbl, 6, 2);
+        userInputs.add(breakfor, 1, 1);
+        userInputs.add(breakMinutesText, 5, 1);
+        userInputs.add(minutes02Lbl, 6, 1);
 
         /* row 3 */
-        userInputs.add(setOpacityTo, 1, 3);
-        userInputs.add(opacityText, 5, 3);
-        userInputs.add(percentLbl, 6, 3);
+        userInputs.add(setOpacityTo, 1, 2);
+        userInputs.add(opacityText, 5, 2);
+        userInputs.add(percentLbl, 6, 2);
+
+        /* row 4, instruction text */
+        userInputs.add(instructionTxt, 1, 4, 6, 1);
 
 
         Scene scene = new Scene(userInputs, 400, 200);
         scene.getStylesheets().add
                 (Main.class.getResource("main.css").toExternalForm());
 
-        scene.addEventHandler(KeyEvent.KEY_RELEASED, enter ->
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, key ->
         {
-            if (enter.getCode().toString() == "ENTER") {
+            String code = key.getCode().toString().toLowerCase();
+
+            if (code.equals("escape") || code.equals("esc")) {
+                form.close();
+            }
+            if (code.equals("enter")) {
                 /* user has submitted the form,
                 * set the values and,
                 * start the app */
@@ -179,6 +188,10 @@ public class Main extends Application {
 
         /* % */
         percentLbl.setText(" %");
+
+        instructionTxt = new Label("Pres Escape to exit, press Enter to start.\nDuring the " +
+                "break period, Escape will restart the cycle.");
+        instructionTxt.setId("instructionTxt");
     }
 
 
@@ -190,12 +203,12 @@ public class Main extends Application {
 
             ActionListener listener = e ->
             {
-                String command = e.getActionCommand();
+                String command = e.getActionCommand().toLowerCase();
 
-                if (command == "Restart") {
+                if (command.equals("restart")) {
                     Platform.runLater(() -> hideBreakPeriodStages());/*fx thread */
                 }
-                if (command == "Exit") {
+                if (command.equals("exit")) {
                     sysTray.remove(trayIcon);/* awt thread */
 
                     Platform.runLater(() -> {/* fx thread */
@@ -233,7 +246,8 @@ public class Main extends Application {
 
         timeoutStages.forEach(s->{
             s.getStage().getScene().addEventHandler(KeyEvent.KEY_RELEASED,  escape -> {
-                if (escape.getCode().toString() == "ESCAPE") {
+                String key = escape.getCode().toString().toLowerCase();
+                if (key.equals("escape") || key.equals("esc")) {
                     hideBreakPeriodStages();
                 }
             });
