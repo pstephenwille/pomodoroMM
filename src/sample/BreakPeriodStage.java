@@ -20,10 +20,8 @@ public class BreakPeriodStage extends Stage {
 
 
 
-    public BreakPeriodStage(final String name, final Screen screen, Double opacity,
+    public BreakPeriodStage(final Screen screen, Double opacity,
                             Label breakTimerLbl, EventHandler hideStagesEvent) {
-        System.out.println("BreakPeriodStage.class");
-
 
         setStage(new Stage());
 
@@ -54,8 +52,8 @@ public class BreakPeriodStage extends Stage {
         stage.initStyle(StageStyle.TRANSPARENT);
         stage.setX(bounds.getMinX());
         stage.setY(bounds.getMinY());
-        stage.toFront();
         stage.initModality(Modality.WINDOW_MODAL);
+        stage.toFront();
     }
 
 

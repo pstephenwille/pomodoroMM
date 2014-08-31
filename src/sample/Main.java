@@ -29,7 +29,6 @@ public class Main extends Application {
     Long breakForMinutes = 10L;
     Long workForMinuts = 25L;
     List<Screen> allScreens;
-    Integer screenCount;
     Stage appContainter = new Stage();
     Long timerText = 100L;
     Label breakTimerLbl = new Label();
@@ -48,7 +47,7 @@ public class Main extends Application {
     Label percentLbl = new Label();
     SystemTray sysTray;
     TrayIcon trayIcon = null;
-    EventHandler<KeyEvent> hideStagesEvent;
+    EventHandler<KeyEvent> escapeStagesEvent;
 
     public static void main(String[] args) {
         launch(args);
@@ -56,11 +55,9 @@ public class Main extends Application {
 
     @Override
     public void start(Stage form) throws Exception {
+        makeFormFields();
 
         GridPane userInputs = new GridPane();
-        userInputs.setGridLinesVisible(false);
-
-        makeFormFields();
 
         /* position form fields */
         /* row 1*/
@@ -83,29 +80,29 @@ public class Main extends Application {
         scene.getStylesheets().add
                 (Main.class.getResource("main.css").toExternalForm());
 
-
-        form.setScene(scene);
-        scene.addEventHandler(KeyEvent.KEY_RELEASED, event ->
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, enter ->
         {
-            if (event.getCode().toString() == "ENTER") {
+            if (enter.getCode().toString() == "ENTER") {
                 workForMinuts *= 60L * 1000L;
                 breakForMinutes *= 60L * 1000L;
                 timerText = breakForMinutes;
 
-                form.close();
-
-                hideStagesEvent = e -> {
-                    if (e.getCode().toString() == "ESCAPE") {
+                escapeStagesEvent = escape -> {
+                    if (escape.getCode().toString() == "ESCAPE") {
                         hideBreakPeriodStages();
                     }
                 };
 
+                form.close();
+
                 makeSysTrayIcon();
-                makeBreakScreens();
                 makeAppContainer();
+                makeBreakScreens();
                 makeTimers();
             }
         });
+        form.setTitle("Pomodoro - multi monitor");
+        form.setScene(scene);
         form.initStyle(StageStyle.UTILITY);
         form.show();
     }
@@ -182,15 +179,8 @@ public class Main extends Application {
         percentLbl.setText(" %");
     }
 
-    /* work period */
-    public void hideBreakPeriodStages() {
-        timeoutStages.forEach(s -> s.getStage().hide());
-        displayTimer.pause();
 
-        workPeriodTimeLine.play();
-    }
-
-    public void makeSysTrayIcon() {/* TrayIcon */
+    public void makeSysTrayIcon() {
         if (SystemTray.isSupported()) {
             sysTray = SystemTray.getSystemTray();
             Image image = Toolkit.getDefaultToolkit().getImage("src/sample/javaIcon.jpg");
@@ -235,18 +225,14 @@ public class Main extends Application {
 
     public void makeBreakScreens() {
         allScreens = Screen.getScreens();
-        screenCount = allScreens.size();
-
         allScreens.forEach(s -> timeoutStages.add(
-                new BreakPeriodStage("id-" + screenCount--,
-                                        s,
-                                        opacity,
-                                        breakTimerLbl,
-                                        hideStagesEvent)));
+                new BreakPeriodStage(s,
+                                    opacity,
+                                    breakTimerLbl,
+                                    escapeStagesEvent)));
     }
 
     public void makeAppContainer() {
-
         StackPane stackPane = new StackPane();
         Scene scene = new Scene(stackPane, 0, 0);
 
@@ -262,8 +248,8 @@ public class Main extends Application {
 
         /* start app */
         new Timeline(new KeyFrame(
-                Duration.millis(0),
-                e -> hideBreakPeriodStages()) ).play();
+                Duration.millis(250),
+                e -> hideBreakPeriodStages())).play();
     }
 
     public void makeTimers() {
@@ -314,13 +300,30 @@ public class Main extends Application {
 
     /* break period */
     public void showBreakPeriodStages() {
+        System.out.println("show stages");
         /* reset timer */
         timerText = breakForMinutes;
-        timeoutStages.forEach(s -> s.getStage().show());
+        timeoutStages.forEach( s ->{s.getStage().show();
+//                                s.getStage().toFront();
+        } );
+        /* gets focus to accept 'escape' key presses */
+        Platform.runLater( ()->timeoutStages.get(0).requestFocus() );
+
         displayTimer.playFromStart();
 
         breakPeriodTimeline.playFromStart();
 
         appContainter.toFront();
     }
+
+    /* work period */
+    public void hideBreakPeriodStages() {
+        System.out.println("hide stages");
+
+        timeoutStages.forEach(s -> s.getStage().hide());
+        displayTimer.pause();
+
+        workPeriodTimeLine.play();
+    }
+
 }
