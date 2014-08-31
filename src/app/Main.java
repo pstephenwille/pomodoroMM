@@ -17,14 +17,21 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 public class Main extends Application {
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     Double opacity = 0.8;
     Long breakForMinutes = 10L;
     Long workForMinuts = 25L;
@@ -49,9 +56,7 @@ public class Main extends Application {
     TrayIcon trayIcon = null;
     EventHandler<KeyEvent> escapeStagesEvent;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+
 
     @Override
     public void start(Stage form) throws Exception {
@@ -180,7 +185,8 @@ public class Main extends Application {
     public void makeSysTrayIcon() {
         if (SystemTray.isSupported()) {
             sysTray = SystemTray.getSystemTray();
-            Image image = Toolkit.getDefaultToolkit().getImage("src/app/javaIcon.jpg");
+            URL imageUrl = Main.class.getResource("javaIcon.jpg");
+            Image image = Toolkit.getDefaultToolkit().getImage(imageUrl);
 
             ActionListener listener = e ->
             {
