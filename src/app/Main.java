@@ -90,12 +90,6 @@ public class Main extends Application {
                 breakForMinutes *= 60L * 1000L;
                 timerText = breakForMinutes;
 
-                escapeStagesEvent = escape -> {
-                    if (escape.getCode().toString() == "ESCAPE") {
-                        hideBreakPeriodStages();
-                    }
-                };
-
                 form.close();
 
                 makeSysTrayIcon();
@@ -229,10 +223,15 @@ public class Main extends Application {
     public void makeBreakScreens() {
         allScreens = Screen.getScreens();
         allScreens.forEach(s -> timeoutStages.add(
-                new BreakPeriodStage(s,
-                                    opacity,
-                                    breakTimerLbl,
-                                    escapeStagesEvent)));
+                new BreakPeriodStage(s, opacity, breakTimerLbl)) );
+
+        timeoutStages.forEach(s->{
+            s.getStage().getScene().addEventHandler(KeyEvent.KEY_RELEASED,  escape -> {
+                if (escape.getCode().toString() == "ESCAPE") {
+                    hideBreakPeriodStages();
+                }
+            });
+        });
     }
 
     public void makeAppContainer() {
