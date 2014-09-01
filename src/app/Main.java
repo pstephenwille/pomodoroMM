@@ -197,7 +197,7 @@ public class Main extends Application {
     }
 
     public void makeSysTrayIcon() {
-        if (SystemTray.isSupported()) {
+        if (SystemTray.isSupported() && sysTray == null) {
             sysTray = SystemTray.getSystemTray();
             URL imageUrl = Main.class.getResource("javaIcon.jpg");
             Image image = Toolkit.getDefaultToolkit().getImage(imageUrl);
@@ -209,6 +209,13 @@ public class Main extends Application {
 
                 if (command.equals("restart")) {
                     Platform.runLater(() -> hideBreakPeriodStages());/*fx thread */
+                }
+                if (command.equals("reset")) {
+                    Platform.runLater(() -> {
+                        app.setMinWidth(400);
+                        app.setMinHeight(200);
+                        app.setOpacity(1.0);
+                    });
                 }
                 if (command.equals("exit")) {
                     sysTray.remove(trayIcon);/* awt thread */
@@ -223,11 +230,16 @@ public class Main extends Application {
             MenuItem restart = new MenuItem("Restart");
             restart.addActionListener(listener);
 
+            MenuItem reset = new MenuItem("Reset");
+            reset.addActionListener(listener);
+
             MenuItem exit = new MenuItem("Exit");
             exit.addActionListener(listener);
 
             PopupMenu popup = new PopupMenu();
             popup.add(restart);
+            popup.addSeparator();
+            popup.add(reset);
             popup.addSeparator();
             popup.add(exit);
 
@@ -242,22 +254,24 @@ public class Main extends Application {
     }
 
     public void makeBreakScreens() {
-        allScreens = Screen.getScreens();
-        allScreens.forEach(s -> timeoutStages.add(
-                new BreakPeriodStage(s, opacity, breakTimerLbl)));
+        if (timeoutStages.size() < 3) {
 
-        timeoutStages.forEach(s -> {
-            s.getStage().getScene().addEventHandler(KeyEvent.KEY_RELEASED, escape -> {
-                String key = escape.getCode().toString().toLowerCase();
-                if (key.equals("escape") || key.equals("esc")) {
-                    hideBreakPeriodStages();
-                }
+            allScreens = Screen.getScreens();
+            allScreens.forEach(s -> timeoutStages.add(
+                    new BreakPeriodStage(s, opacity, breakTimerLbl)));
+
+            timeoutStages.forEach(s -> {
+                s.getStage().getScene().addEventHandler(KeyEvent.KEY_RELEASED, escape -> {
+                    String key = escape.getCode().toString().toLowerCase();
+                    if (key.equals("escape") || key.equals("esc")) {
+                        hideBreakPeriodStages();
+                    }
+                });
             });
-        });
+        }
     }
 
     public void makeTimers() {
-
         /* show break stages */
         breakPeriodTimeline = new Timeline(new KeyFrame(Duration.millis(breakForMinutes),
                 even -> hideBreakPeriodStages()));
@@ -298,13 +312,12 @@ public class Main extends Application {
                 }));
         displayTimer.setCycleCount(Timeline.INDEFINITE);
     }
-
     /* work period */
     public void hideBreakPeriodStages() {
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
-        workPeriodTimeLine.play();
+        workPeriodTimeLine.playFromStart();
     }
 
     /* break period */
