@@ -17,6 +17,7 @@ import javafx.util.Duration;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.geom.Arc2D;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +104,11 @@ public class Main extends Application {
                 workForMinuts *= 60L * 1000L;
                 breakForMinutes *= 60L * 1000L;
                 timerText = breakForMinutes;
+
+                if (timeoutStages.size() > 0) {
+                    timeoutStages.forEach( s->{s.getLayout()
+                            .setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ")");} );
+                }
 
                 /* leave app container running, to give the stages someting to run in. */
                 app.setMaxWidth(0.0);
@@ -207,14 +213,23 @@ public class Main extends Application {
             {
                 String command = e.getActionCommand().toLowerCase();
 
+                if (command.equals("pause")) {
+                    Platform.runLater(()->pauseApp());
+                }
                 if (command.equals("restart")) {
                     Platform.runLater(() -> hideBreakPeriodStages());/*fx thread */
                 }
                 if (command.equals("reset")) {
                     Platform.runLater(() -> {
+                        pauseApp();
+
+                        workForMinuts = workForMinuts /60 /1000L;
+                        breakForMinutes = breakForMinutes /60 /1000L;
+
                         app.setMinWidth(400);
                         app.setMinHeight(200);
                         app.setOpacity(1.0);
+                        app.requestFocus();
                     });
                 }
                 if (command.equals("exit")) {
@@ -227,6 +242,9 @@ public class Main extends Application {
                 }
             };
 
+            MenuItem pause = new MenuItem("Pause");
+            pause.addActionListener(listener);
+
             MenuItem restart = new MenuItem("Restart");
             restart.addActionListener(listener);
 
@@ -237,6 +255,8 @@ public class Main extends Application {
             exit.addActionListener(listener);
 
             PopupMenu popup = new PopupMenu();
+            popup.add(pause);
+            popup.addSeparator();
             popup.add(restart);
             popup.addSeparator();
             popup.add(reset);
@@ -254,7 +274,7 @@ public class Main extends Application {
     }
 
     public void makeBreakScreens() {
-        if (timeoutStages.size() < 3) {
+        if (timeoutStages.size() == 0) {
 
             allScreens = Screen.getScreens();
             allScreens.forEach(s -> timeoutStages.add(
@@ -312,6 +332,7 @@ public class Main extends Application {
                 }));
         displayTimer.setCycleCount(Timeline.INDEFINITE);
     }
+
     /* work period */
     public void hideBreakPeriodStages() {
         timeoutStages.forEach(s -> s.getStage().hide());
@@ -319,7 +340,6 @@ public class Main extends Application {
 
         workPeriodTimeLine.playFromStart();
     }
-
     /* break period */
     public void showBreakPeriodStages() {
         /* reset timer */
@@ -334,6 +354,14 @@ public class Main extends Application {
         breakPeriodTimeline.playFromStart();
 
         appContainter.toFront();
+    }
+
+    public void pauseApp() {
+        timeoutStages.forEach(s->s.getStage().hide());
+
+        breakPeriodTimeline.pause();
+        workPeriodTimeLine.pause();
+        displayTimer.pause();
     }
 
 }
