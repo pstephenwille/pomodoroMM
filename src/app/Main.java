@@ -4,22 +4,17 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.PixelReader;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.net.URL;
@@ -29,37 +24,37 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Main extends Application {
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     Double opacity = 0.8;
-    Long breakForMinutes = 10L;
-    Long workForMinuts = 25L;
-    List<Screen> allScreens;
-    Stage appContainter = new Stage();
-    Long timerText = 100L;
-    Label breakTimerLbl = new Label();
-    Timeline displayTimer;
-    List<BreakPeriodStage> timeoutStages = new ArrayList<>();
-    Timeline breakPeriodTimeline;
-    Timeline workPeriodTimeLine;
-    Label willWorkFor = new Label();
-    TextField workMinutesText = new TextField();
-    Label minutes01Lbl = new Label();
-    Label breakfor = new Label();
-    TextField breakMinutesText = new TextField();
     Label minutes02Lbl = new Label();
     Label setOpacityTo = new Label();
-    TextField opacityText = new TextField();
-    Label percentLbl = new Label();
-    SystemTray sysTray;
-    TrayIcon trayIcon = null;
+    Label breakTimerLbl = new Label();
+    Label willWorkFor = new Label();
     Label instructionTxt;
+    Label percentLbl = new Label();
+    Label breakfor = new Label();
+    Label minutes01Lbl = new Label();
+    List<Screen> allScreens;
+    List<BreakPeriodStage> timeoutStages = new ArrayList<>();
+    Long breakForMinutes = 10L;
+    Long workForMinuts = 25L;
+    Long timerText = 100L;
+    TextField breakMinutesText = new TextField();
+    TextField opacityText = new TextField();
+    TextField workMinutesText = new TextField();
+    Timeline displayTimer;
+    Timeline breakPeriodTimeline;
+    Timeline workPeriodTimeLine;
+    TrayIcon trayIcon = null;
     Stage app;
+    Stage appContainter = new Stage();
     String minutesText;
     String secondsText;
     String millisText;
+    SystemTray sysTray;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage app) throws Exception {
@@ -88,8 +83,6 @@ public class Main extends Application {
 
         /* row 4, instruction text */
         userInputs.add(instructionTxt, 1, 4, 6, 1);
-
-
 
 
         Scene scene = new Scene(userInputs, 400, 200);
@@ -131,26 +124,50 @@ public class Main extends Application {
     }
 
     public void makeFormFields() {
+        ChangeListener parseField = (observable, oldValue, newValue) -> {
+            System.out.println("event lambda");
+            String fieldID = observable.toString().split(" ")[2].split("=")[1].replace(",", "");
+
+            String _digits = newValue.toString().replaceAll("\\D+", "");
+
+            /* limit to 3 digits */
+            _digits = (_digits.length() > 3) ? _digits.substring(0, 3) : _digits;
+
+            if (_digits.length() > 0) {
+                if (fieldID.equals("workMinutes")) {
+                    workForMinuts = Long.parseLong(_digits);
+                }
+                if (fieldID.equals("breakMinutes")) {
+                    breakForMinutes = Long.parseLong(_digits);
+                }
+                if (fieldID.equals("opacity")) {
+                    opacity = Double.parseDouble(_digits) / 100.00;
+                }
+            } else {
+                _digits = "";
+            }
+
+            if(fieldID.equals("workMinutes")) {
+                workMinutesText.setText(_digits);
+            }
+            if(fieldID.equals("breakMinutes")) {
+                breakMinutesText.setText(_digits);
+            }
+            if(fieldID.equals("opacity")){
+                opacityText.setText(_digits);
+            }
+
+            System.out.println(_digits);
+
+        };
+
         /* i will work for */
         willWorkFor.setText("I will work for ");
 
         /* work minutes, input */
         workMinutesText.setText("25");
-        workMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
-            String onlyDigits = newValue.replaceAll("\\D+", "");
-
-            onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
-
-            int _length = onlyDigits.length();
-
-            if (_length > 0 && _length < 4) {
-                workForMinuts = Long.parseLong(onlyDigits);
-            } else {
-                onlyDigits = "0";
-            }
-
-            workMinutesText.setText(onlyDigits);
-        });
+        workMinutesText.setId("workMinutes");
+        workMinutesText.textProperty().addListener(parseField);
 
         /* minutes */
         minutes01Lbl.setText(" minutes");
@@ -160,21 +177,9 @@ public class Main extends Application {
 
         /* break minutes, input */
         breakMinutesText.setText("10");
-        breakMinutesText.textProperty().addListener((observable, oldValue, newValue) -> {
-            String onlyDigits = newValue.replaceAll("\\D+", "");
+        breakMinutesText.setId("breakMinutes");
+        breakMinutesText.textProperty().addListener(parseField);
 
-            onlyDigits = (onlyDigits.length() > 3) ? onlyDigits.substring(0, 3) : onlyDigits;
-
-            int _length = onlyDigits.length();
-
-            if (_length > 0 && _length < 3) {
-                breakForMinutes = Long.parseLong(onlyDigits);
-            } else {
-                onlyDigits = "0";
-            }
-
-            breakMinutesText.setText(onlyDigits);
-        });
         /* minutes */
         minutes02Lbl.setText(" minutes");
 
@@ -183,18 +188,9 @@ public class Main extends Application {
 
         /* opacity input */
         opacityText.setText("80");
-        opacityText.textProperty().addListener((observable, oldValue, newValue) -> {
-            String _digits = newValue.replaceAll("\\D+", "");
+        opacityText.setId("opacity");
+        opacityText.textProperty().addListener(parseField);
 
-            int _length = _digits.length();
-
-            if (_length > 0 && _length < 4) {
-                opacity = Double.parseDouble(_digits) / 100.00;
-            } else {
-                _digits = "0";
-            }
-            opacityText.setText(_digits);
-        });
 
         /* % */
         percentLbl.setText(" %");
@@ -229,15 +225,15 @@ public class Main extends Application {
             };
 
             MenuItem restart = new MenuItem("Restart");
-                restart.addActionListener(listener);
+            restart.addActionListener(listener);
 
             MenuItem exit = new MenuItem("Exit");
-                exit.addActionListener(listener);
+            exit.addActionListener(listener);
 
             PopupMenu popup = new PopupMenu();
-                popup.add(restart);
-                popup.addSeparator();
-                popup.add(exit);
+            popup.add(restart);
+            popup.addSeparator();
+            popup.add(exit);
 
             trayIcon = new TrayIcon(image, "Pomodoro Timer", popup);
             trayIcon.addActionListener(listener);
@@ -252,10 +248,10 @@ public class Main extends Application {
     public void makeBreakScreens() {
         allScreens = Screen.getScreens();
         allScreens.forEach(s -> timeoutStages.add(
-                new BreakPeriodStage(s, opacity, breakTimerLbl)) );
+                new BreakPeriodStage(s, opacity, breakTimerLbl)));
 
-        timeoutStages.forEach(s->{
-            s.getStage().getScene().addEventHandler(KeyEvent.KEY_RELEASED,  escape -> {
+        timeoutStages.forEach(s -> {
+            s.getStage().getScene().addEventHandler(KeyEvent.KEY_RELEASED, escape -> {
                 String key = escape.getCode().toString().toLowerCase();
                 if (key.equals("escape") || key.equals("esc")) {
                     hideBreakPeriodStages();
@@ -307,28 +303,28 @@ public class Main extends Application {
         displayTimer.setCycleCount(Timeline.INDEFINITE);
     }
 
-    /* break period */
-    public void showBreakPeriodStages() {
-        /* reset timer */
-        timerText = breakForMinutes;
-        timeoutStages.forEach( s ->s.getStage().show());
-
-        /* gets focus to accept 'escape' key presses */
-        Platform.runLater( ()->timeoutStages.get(0).getStage().requestFocus() );
-
-        displayTimer.playFromStart();
-
-        breakPeriodTimeline.playFromStart();
-
-        appContainter.toFront();
-    }
-
     /* work period */
     public void hideBreakPeriodStages() {
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
         workPeriodTimeLine.play();
+    }
+
+    /* break period */
+    public void showBreakPeriodStages() {
+        /* reset timer */
+        timerText = breakForMinutes;
+        timeoutStages.forEach(s -> s.getStage().show());
+
+        /* gets focus to accept 'escape' key presses */
+        Platform.runLater(() -> timeoutStages.get(0).getStage().requestFocus());
+
+        displayTimer.playFromStart();
+
+        breakPeriodTimeline.playFromStart();
+
+        appContainter.toFront();
     }
 
 }
