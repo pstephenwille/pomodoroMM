@@ -125,7 +125,6 @@ public class Main extends Application {
 
     public void makeFormFields() {
         ChangeListener parseField = (observable, oldValue, newValue) -> {
-            System.out.println("event lambda");
             String fieldID = observable.toString().split(" ")[2].split("=")[1].replace(",", "");
 
             String _digits = newValue.toString().replaceAll("\\D+", "");
@@ -156,9 +155,6 @@ public class Main extends Application {
             if(fieldID.equals("opacity")){
                 opacityText.setText(_digits);
             }
-
-            System.out.println(_digits);
-
         };
 
         /* i will work for */
