@@ -17,7 +17,6 @@ import javafx.util.Duration;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.geom.Arc2D;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,7 @@ public class Main extends Application {
     List<BreakPeriodStage> timeoutStages = new ArrayList<>();
     Long breakForMinutes = 10L;
     Long workForMinuts = 25L;
-    Long timerText = 100L;
+    Long timerText;
     TextField breakMinutesText = new TextField();
     TextField opacityText = new TextField();
     TextField workMinutesText = new TextField();
@@ -103,14 +102,17 @@ public class Main extends Application {
                 * start the app */
                 workForMinuts *= 60L * 1000L;
                 breakForMinutes *= 60L * 1000L;
-                timerText = breakForMinutes;
+                timerText = workForMinuts;
 
                 if (timeoutStages.size() > 0) {
-                    timeoutStages.forEach( s->{s.getLayout()
-                            .setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ")");} );
+                    /* reset countdown clock opacity */
+                    timeoutStages.forEach(s -> {
+                        s.getLayout()
+                                .setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ")");
+                    });
                 }
 
-                /* leave app container running, to give the stages someting to run in. */
+                /* leave app container running, to give the stages something to run in. */
                 app.setMaxWidth(0.0);
                 app.setMaxHeight(0.0);
                 app.setOpacity(0.0);
@@ -152,13 +154,13 @@ public class Main extends Application {
                 _digits = "";
             }
 
-            if(fieldID.equals("workMinutes")) {
+            if (fieldID.equals("workMinutes")) {
                 workMinutesText.setText(_digits);
             }
-            if(fieldID.equals("breakMinutes")) {
+            if (fieldID.equals("breakMinutes")) {
                 breakMinutesText.setText(_digits);
             }
-            if(fieldID.equals("opacity")){
+            if (fieldID.equals("opacity")) {
                 opacityText.setText(_digits);
             }
         };
@@ -214,7 +216,7 @@ public class Main extends Application {
                 String command = e.getActionCommand().toLowerCase();
 
                 if (command.equals("pause")) {
-                    Platform.runLater(()->pauseApp());
+                    Platform.runLater(() -> pauseApp());
                 }
                 if (command.equals("restart")) {
                     Platform.runLater(() -> hideBreakPeriodStages());/*fx thread */
@@ -223,8 +225,9 @@ public class Main extends Application {
                     Platform.runLater(() -> {
                         pauseApp();
 
-                        workForMinuts = workForMinuts /60 /1000L;
-                        breakForMinutes = breakForMinutes /60 /1000L;
+                        /* convert back to decimal */
+                        workForMinuts = workForMinuts / 60 / 1000L;
+                        breakForMinutes = breakForMinutes / 60 / 1000L;
 
                         app.setMinWidth(400);
                         app.setMinHeight(200);
@@ -340,6 +343,15 @@ public class Main extends Application {
 
         workPeriodTimeLine.playFromStart();
     }
+
+    public void pauseApp() {
+        timeoutStages.forEach(s -> s.getStage().hide());
+
+        breakPeriodTimeline.pause();
+        workPeriodTimeLine.pause();
+        displayTimer.pause();
+    }
+
     /* break period */
     public void showBreakPeriodStages() {
         /* reset timer */
@@ -354,14 +366,6 @@ public class Main extends Application {
         breakPeriodTimeline.playFromStart();
 
         appContainter.toFront();
-    }
-
-    public void pauseApp() {
-        timeoutStages.forEach(s->s.getStage().hide());
-
-        breakPeriodTimeline.pause();
-        workPeriodTimeLine.pause();
-        displayTimer.pause();
     }
 
 }
