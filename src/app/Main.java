@@ -36,7 +36,7 @@ public class Main extends Application {
     List<Screen> allScreens;
     List<BreakPeriodStage> timeoutStages = new ArrayList<>();
     Long breakForMinutes = 10L;
-    Long workForMinuts = 25L;
+    Long workForMinutes = 25L;
     Long timerText;
     TextField breakMinutesText = new TextField();
     TextField opacityText = new TextField();
@@ -63,7 +63,6 @@ public class Main extends Application {
         makeFormFields();
 
         GridPane userInputs = new GridPane();
-//        userInputs.setGridLinesVisible(true);
 
         /* position form fields */
         /* row 1*/
@@ -89,20 +88,31 @@ public class Main extends Application {
         scene.getStylesheets().add
                 (Main.class.getResource("main.css").toExternalForm());
 
-        scene.addEventHandler(KeyEvent.KEY_RELEASED, key ->
+        app.addEventHandler(KeyEvent.KEY_RELEASED, key ->
         {
             String code = key.getCode().toString().toLowerCase();
 
             if (code.equals("escape") || code.equals("esc")) {
-                app.close();
+                app.setMaxWidth(0.0);
+                app.setMaxHeight(0.0);
+                app.setOpacity(0.0);
             }
-            if (code.equals("enter")) {
+
+
+            if (code.equals("enter") || code.equals("escape")) {
                 /* user has submitted the form,
                 * set the values and,
                 * start the app */
-                workForMinuts *= 60L * 1000L;
-                breakForMinutes *= 60L * 1000L;
-                timerText = workForMinuts;
+                if (timeoutStages.size() > 0) pauseApp();
+
+                /* if not already milliseconds */
+                if (workForMinutes.toString().length() < 4) {
+                    workForMinutes *= 60L * 1000L;
+                }
+                if (breakForMinutes.toString().length() < 4) {
+                    breakForMinutes *= 60L * 1000L;
+                }
+                timerText = workForMinutes;
 
                 if (timeoutStages.size() > 0) {
                     /* reset countdown clock opacity */
@@ -142,7 +152,7 @@ public class Main extends Application {
 
             if (_digits.length() > 0) {
                 if (fieldID.equals("workMinutes")) {
-                    workForMinuts = Long.parseLong(_digits);
+                    workForMinutes = Long.parseLong(_digits);
                 }
                 if (fieldID.equals("breakMinutes")) {
                     breakForMinutes = Long.parseLong(_digits);
@@ -223,12 +233,6 @@ public class Main extends Application {
                 }
                 if (command.equals("reset")) {
                     Platform.runLater(() -> {
-                        pauseApp();
-
-                        /* convert back to decimal */
-                        workForMinuts = workForMinuts / 60 / 1000L;
-                        breakForMinutes = breakForMinutes / 60 / 1000L;
-
                         app.setMinWidth(400);
                         app.setMinHeight(200);
                         app.setOpacity(1.0);
@@ -300,7 +304,7 @@ public class Main extends Application {
                 even -> hideBreakPeriodStages()));
 
         /* hide break stages */
-        workPeriodTimeLine = new Timeline(new KeyFrame(Duration.millis(workForMinuts),
+        workPeriodTimeLine = new Timeline(new KeyFrame(Duration.millis(workForMinutes),
                 event -> showBreakPeriodStages()));
 
         /* update count down clock */
@@ -330,7 +334,7 @@ public class Main extends Application {
                             secondsText + ":" +
                             millisText.substring(0, 2));
                     if (timerText <= 0) {
-                        timerText = workForMinuts;
+                        timerText = workForMinutes;
                     }
                 }));
         displayTimer.setCycleCount(Timeline.INDEFINITE);
@@ -351,6 +355,7 @@ public class Main extends Application {
         workPeriodTimeLine.pause();
         displayTimer.pause();
     }
+
 
     /* break period */
     public void showBreakPeriodStages() {
