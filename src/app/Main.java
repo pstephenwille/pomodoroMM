@@ -99,7 +99,7 @@ public class Main extends Application {
             }
 
 
-            if (code.equals("enter") || code.equals("escape")) {
+            if (code.equals("enter")) {
                 /* user has submitted the form,
                 * set the values and,
                 * start the app */
@@ -121,7 +121,7 @@ public class Main extends Application {
                                 .setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ")");
                     });
                 }
-
+                System.out.println(workForMinutes);
                 /* leave app container running, to give the stages something to run in. */
                 app.setMaxWidth(0.0);
                 app.setMaxHeight(0.0);
@@ -348,15 +348,6 @@ public class Main extends Application {
         workPeriodTimeLine.playFromStart();
     }
 
-    public void pauseApp() {
-        timeoutStages.forEach(s -> s.getStage().hide());
-
-        breakPeriodTimeline.pause();
-        workPeriodTimeLine.pause();
-        displayTimer.pause();
-    }
-
-
     /* break period */
     public void showBreakPeriodStages() {
         /* reset timer */
@@ -373,4 +364,11 @@ public class Main extends Application {
         appContainter.toFront();
     }
 
+    public void pauseApp() {
+        timeoutStages.forEach(s -> s.getStage().hide());
+
+        breakPeriodTimeline.pause();
+        workPeriodTimeLine.pause();
+        displayTimer.pause();
+    }
 }
