@@ -121,7 +121,6 @@ public class Main extends Application {
                                 .setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ")");
                     });
                 }
-                System.out.println(workForMinutes);
                 /* leave app container running, to give the stages something to run in. */
                 app.setMaxWidth(0.0);
                 app.setMaxHeight(0.0);
