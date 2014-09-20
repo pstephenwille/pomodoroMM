@@ -64,7 +64,7 @@ public class Main extends Application {
     SystemTray sysTray;
     BufferedImage buffTrayIcon;
     Label trayDigits;
-    WritableImage wimg;
+    PopupMenu popup;
     public static void main(String[] args) {
         launch(args);
     }
@@ -227,21 +227,19 @@ public class Main extends Application {
     }
 
     public void updateTrayDigits() {
-    /*get trayDigits */
+        /* fs get trayDigits */
         /* update label */
-//        SwingFXUtils.fromFXImage(trayScene.snapshot(wimg), buffTrayIcon);
+//        SwingFXUtils.fromFXImage(trayScene.snapshot( new WritableImage(16, 16) ), buffTrayIcon);
 
-        /* update trayIcon */
+        /* awt update trayIcon */
+//        trayIcon = new TrayIcon(buffTrayIcon, "Pomodoro Timer", popup);
+
     }
     public void makeSysTrayIcon() {
         if (SystemTray.isSupported() && sysTray == null) {
             sysTray = SystemTray.getSystemTray();
-            URL imageUrl = Main.class.getResource("javaIcon.jpg");
-            Image image = Toolkit.getDefaultToolkit().getImage(imageUrl);
 
             /* fx thread */
-            WritableImage wimg = new WritableImage(16, 16);
-
             StackPane trayPane = new StackPane();
             trayPane.setMinWidth(16.0);
             trayPane.setMinHeight(16.0);
@@ -256,7 +254,7 @@ public class Main extends Application {
 
             /* awt thread */
             buffTrayIcon = new BufferedImage(16, 16, 2);
-            SwingFXUtils.fromFXImage(trayScene.snapshot(wimg), buffTrayIcon);
+            SwingFXUtils.fromFXImage(trayScene.snapshot( new WritableImage(16, 16) ), buffTrayIcon);
 
 
             ActionListener listener = e ->
@@ -299,7 +297,7 @@ public class Main extends Application {
             MenuItem exit = new MenuItem("Exit");
             exit.addActionListener(listener);
 
-            PopupMenu popup = new PopupMenu();
+            popup = new PopupMenu();
             popup.add(pause);
             popup.addSeparator();
             popup.add(restart);
