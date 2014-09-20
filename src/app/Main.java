@@ -434,10 +434,6 @@ public class Main extends Application {
     }
 
     public void pauseApp() {
-//        timeoutStages.forEach(s -> s.getStage().hide());
-//        breakPeriodTimeline.pause();
-//        displayTimer.pause();
-
         workPeriodTimeLine.pause();
         trayTimer.pause();
     }
