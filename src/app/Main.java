@@ -49,6 +49,7 @@ public class Main extends Application {
     Long breakForMinutes = 10L;
     Long workForMinutes = 25L;
     Long timerText;
+    Long trayTimerText;
     TextField breakMinutesText = new TextField();
     TextField opacityText = new TextField();
     TextField workMinutesText = new TextField();
@@ -65,6 +66,11 @@ public class Main extends Application {
     BufferedImage buffTrayIcon;
     Label trayDigits;
     PopupMenu popup;
+    Scene trayScene;
+    Timeline trayTimer;
+    WritableImage wim = new WritableImage(16, 16);
+    String trayMinutesText;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -109,6 +115,7 @@ public class Main extends Application {
                 app.setMaxWidth(0.0);
                 app.setMaxHeight(0.0);
                 app.setOpacity(0.0);
+                updateTrayDigits();
             }
 
 
@@ -125,7 +132,8 @@ public class Main extends Application {
                 if (breakForMinutes.toString().length() < 4) {
                     breakForMinutes *= 60L * 1000L;
                 }
-                timerText = workForMinutes;
+                timerText = workForMinutes;/*should this be breakForMinutes? */
+                trayTimerText = workForMinutes;
 
                 if (timeoutStages.size() > 0) {
                     /* reset countdown clock opacity */
@@ -227,13 +235,13 @@ public class Main extends Application {
     }
 
     public void updateTrayDigits() {
-        /* fs get trayDigits */
-        /* update label */
-//        SwingFXUtils.fromFXImage(trayScene.snapshot( new WritableImage(16, 16) ), buffTrayIcon);
+        trayDigits.setText("01");
+
+        /* remake image */
+        SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
 
         /* awt update trayIcon */
-//        trayIcon = new TrayIcon(buffTrayIcon, "Pomodoro Timer", popup);
-
+        trayIcon.setImage(buffTrayIcon);
     }
     public void makeSysTrayIcon() {
         if (SystemTray.isSupported() && sysTray == null) {
@@ -245,16 +253,17 @@ public class Main extends Application {
             trayPane.setMinHeight(16.0);
             trayPane.setStyle("-fx-background-color: #333333;");
 
-            trayDigits = new Label("00");
+            trayDigits = new Label();
+            trayDigits.setText(workMinutesText.getText());
             trayDigits.setStyle("-fx-text-fill: #FFFFFF");
             trayDigits.setAlignment(Pos.CENTER);
 
             trayPane.getChildren().addAll(trayDigits);
-            Scene trayScene = new Scene(trayPane, null);
+            trayScene = new Scene(trayPane, null);
 
             /* awt thread */
             buffTrayIcon = new BufferedImage(16, 16, 2);
-            SwingFXUtils.fromFXImage(trayScene.snapshot( new WritableImage(16, 16) ), buffTrayIcon);
+            SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
 
 
             ActionListener listener = e ->
@@ -337,7 +346,9 @@ public class Main extends Application {
     public void makeTimers() {
         /* show break stages */
         breakPeriodTimeline = new Timeline(new KeyFrame(Duration.millis(breakForMinutes),
-                even -> hideBreakPeriodStages()));
+                even -> {
+                    hideBreakPeriodStages();
+                }));
 
         /* hide break stages */
         workPeriodTimeLine = new Timeline(new KeyFrame(Duration.millis(workForMinutes),
@@ -374,6 +385,22 @@ public class Main extends Application {
                     }
                 }));
         displayTimer.setCycleCount(Timeline.INDEFINITE);
+
+        trayTimer = new Timeline(new KeyFrame(
+                Duration.seconds(1),
+                e->{
+                    trayTimerText -= 60000;
+                    Long _minutes = TimeUnit.MILLISECONDS.toMinutes(trayTimerText) % 60;
+                    trayMinutesText = _minutes.toString();
+
+                    trayDigits.setText(trayMinutesText);
+
+                    SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
+                    trayIcon.setImage(buffTrayIcon);
+
+                    System.out.println(trayMinutesText);
+                }));
+        trayTimer.setCycleCount(Timeline.INDEFINITE);
     }
 
     /* work period */
@@ -381,6 +408,7 @@ public class Main extends Application {
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
+        trayTimer.play();
         workPeriodTimeLine.playFromStart();
     }
 
