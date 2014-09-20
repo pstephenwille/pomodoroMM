@@ -49,7 +49,7 @@ public class Main extends Application {
     Long breakForMinutes = 10L;
     Long workForMinutes = 25L;
     Long timerText;
-    Long trayTimerText;
+    Long trayTimerCounter;
     TextField breakMinutesText = new TextField();
     TextField opacityText = new TextField();
     TextField workMinutesText = new TextField();
@@ -132,8 +132,8 @@ public class Main extends Application {
                 if (breakForMinutes.toString().length() < 4) {
                     breakForMinutes *= 60L * 1000L;
                 }
-                timerText = workForMinutes;/*should this be breakForMinutes? */
-                trayTimerText = workForMinutes;
+                timerText = breakForMinutes;
+                trayTimerCounter = workForMinutes;
 
                 if (timeoutStages.size() > 0) {
                     /* reset countdown clock opacity */
@@ -387,10 +387,10 @@ public class Main extends Application {
         displayTimer.setCycleCount(Timeline.INDEFINITE);
 
         trayTimer = new Timeline(new KeyFrame(
-                Duration.seconds(1),
+                Duration.millis(10000),
                 e->{
-                    trayTimerText -= 60000;
-                    Long _minutes = TimeUnit.MILLISECONDS.toMinutes(trayTimerText) % 60;
+                    trayTimerCounter -= 10000;
+                    Long _minutes = TimeUnit.MILLISECONDS.toMinutes(trayTimerCounter) % 60;
                     trayMinutesText = _minutes.toString();
 
                     trayDigits.setText(trayMinutesText);
@@ -408,19 +408,23 @@ public class Main extends Application {
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
-        trayTimer.play();
+        trayTimerCounter = workForMinutes;
+        trayTimer.playFromStart();
         workPeriodTimeLine.playFromStart();
     }
 
     /* break period */
     public void showBreakPeriodStages() {
-        /* reset timer */
-        timerText = breakForMinutes;
+        trayDigits.setText("00");
+        trayTimer.pause();
+
         timeoutStages.forEach(s -> s.getStage().show());
 
         /* gets focus to accept 'escape' key presses */
         Platform.runLater(() -> timeoutStages.get(0).getStage().requestFocus());
 
+        /* reset timer */
+        timerText = breakForMinutes;
         displayTimer.playFromStart();
 
         breakPeriodTimeline.playFromStart();
@@ -434,5 +438,6 @@ public class Main extends Application {
         breakPeriodTimeline.pause();
         workPeriodTimeLine.pause();
         displayTimer.pause();
+        trayTimer.pause();
     }
 }
