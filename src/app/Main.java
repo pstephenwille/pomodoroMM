@@ -5,18 +5,29 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.canvas.*;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +62,9 @@ public class Main extends Application {
     String secondsText;
     String millisText;
     SystemTray sysTray;
-
+    BufferedImage buffTrayIcon;
+    Label trayDigits;
+    WritableImage wimg;
     public static void main(String[] args) {
         launch(args);
     }
@@ -213,11 +226,37 @@ public class Main extends Application {
         instructionTxt.setId("instructionTxt");
     }
 
+    public void updateTrayDigits() {
+    /*get trayDigits */
+        /* update label */
+//        SwingFXUtils.fromFXImage(trayScene.snapshot(wimg), buffTrayIcon);
+
+        /* update trayIcon */
+    }
     public void makeSysTrayIcon() {
         if (SystemTray.isSupported() && sysTray == null) {
             sysTray = SystemTray.getSystemTray();
             URL imageUrl = Main.class.getResource("javaIcon.jpg");
             Image image = Toolkit.getDefaultToolkit().getImage(imageUrl);
+
+            /* fx thread */
+            WritableImage wimg = new WritableImage(16, 16);
+
+            StackPane trayPane = new StackPane();
+            trayPane.setMinWidth(16.0);
+            trayPane.setMinHeight(16.0);
+            trayPane.setStyle("-fx-background-color: #333333;");
+
+            trayDigits = new Label("00");
+            trayDigits.setStyle("-fx-text-fill: #FFFFFF");
+            trayDigits.setAlignment(Pos.CENTER);
+
+            trayPane.getChildren().addAll(trayDigits);
+            Scene trayScene = new Scene(trayPane, null);
+
+            /* awt thread */
+            buffTrayIcon = new BufferedImage(16, 16, 2);
+            SwingFXUtils.fromFXImage(trayScene.snapshot(wimg), buffTrayIcon);
 
 
             ActionListener listener = e ->
@@ -269,7 +308,7 @@ public class Main extends Application {
             popup.addSeparator();
             popup.add(exit);
 
-            trayIcon = new TrayIcon(image, "Pomodoro Timer", popup);
+            trayIcon = new TrayIcon(buffTrayIcon, "Pomodoro Timer", popup);
             trayIcon.addActionListener(listener);
 
             try {
