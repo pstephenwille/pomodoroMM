@@ -70,6 +70,8 @@ public class Main extends Application {
     Timeline trayTimer;
     WritableImage wim = new WritableImage(16, 16);
     String trayMinutesText;
+    Long trayCycleMillis = 15000L;
+
 
     public static void main(String[] args) {
         launch(args);
@@ -112,10 +114,14 @@ public class Main extends Application {
             String code = key.getCode().toString().toLowerCase();
 
             if (code.equals("escape") || code.equals("esc")) {
-                app.setMaxWidth(0.0);
-                app.setMaxHeight(0.0);
-                app.setOpacity(0.0);
-                updateTrayDigits();
+                if (timeoutStages.size() == 0) {
+                    app.close();
+                }
+                else{
+                    app.setMaxWidth(0.0);
+                    app.setMaxHeight(0.0);
+                    app.setOpacity(0.0);
+                }
             }
 
 
@@ -234,47 +240,37 @@ public class Main extends Application {
         instructionTxt.setId("instructionTxt");
     }
 
-    public void updateTrayDigits() {
-        trayDigits.setText("01");
-
-        /* remake image */
-        SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
-
-        /* awt update trayIcon */
-        trayIcon.setImage(buffTrayIcon);
-    }
     public void makeSysTrayIcon() {
         if (SystemTray.isSupported() && sysTray == null) {
             sysTray = SystemTray.getSystemTray();
 
-            /* fx thread */
+            /* fx thread: set up tray digits */
             StackPane trayPane = new StackPane();
             trayPane.setMinWidth(16.0);
             trayPane.setMinHeight(16.0);
-            trayPane.setStyle("-fx-background-color: #333333;");
+            trayPane.setStyle("-fx-background-color: #000000;");
+            trayPane.setOpacity(0.8);
 
             trayDigits = new Label();
-            trayDigits.setText(workMinutesText.getText());
             trayDigits.setStyle("-fx-text-fill: #FFFFFF");
-            trayDigits.setAlignment(Pos.CENTER);
+            trayDigits.setOpacity(1);
 
             trayPane.getChildren().addAll(trayDigits);
             trayScene = new Scene(trayPane, null);
 
-            /* awt thread */
+            /* awt thread: make tray icon */
             buffTrayIcon = new BufferedImage(16, 16, 2);
             SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
-
 
             ActionListener listener = e ->
             {
                 String command = e.getActionCommand().toLowerCase();
 
                 if (command.equals("pause")) {
-                    Platform.runLater(() -> pauseApp());
+                    Platform.runLater(() -> pauseApp() );
                 }
                 if (command.equals("restart")) {
-                    Platform.runLater(() -> hideBreakPeriodStages());/*fx thread */
+                    Platform.runLater(() -> restartApp() );/*fx thread */
                 }
                 if (command.equals("reset")) {
                     Platform.runLater(() -> {
@@ -306,6 +302,7 @@ public class Main extends Application {
             MenuItem exit = new MenuItem("Exit");
             exit.addActionListener(listener);
 
+            /* add tray menu options */
             popup = new PopupMenu();
             popup.add(pause);
             popup.addSeparator();
@@ -321,6 +318,7 @@ public class Main extends Application {
             try {
                 sysTray.add(trayIcon);
             } catch (AWTException except) {
+                app.close();
             }
         }
     }
@@ -346,9 +344,7 @@ public class Main extends Application {
     public void makeTimers() {
         /* show break stages */
         breakPeriodTimeline = new Timeline(new KeyFrame(Duration.millis(breakForMinutes),
-                even -> {
-                    hideBreakPeriodStages();
-                }));
+                even -> hideBreakPeriodStages() ));
 
         /* hide break stages */
         workPeriodTimeLine = new Timeline(new KeyFrame(Duration.millis(workForMinutes),
@@ -386,17 +382,15 @@ public class Main extends Application {
                 }));
         displayTimer.setCycleCount(Timeline.INDEFINITE);
 
+        /* update tray clock every 30 seconds */
         trayTimer = new Timeline(new KeyFrame(
-                Duration.millis(10000),
+                Duration.millis(trayCycleMillis),
                 e->{
-                    trayTimerCounter -= 10000;
+                    trayTimerCounter -= trayCycleMillis;
                     Long _minutes = TimeUnit.MILLISECONDS.toMinutes(trayTimerCounter) % 60;
                     trayMinutesText = _minutes.toString();
 
-                    trayDigits.setText(trayMinutesText);
-
-                    SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
-                    trayIcon.setImage(buffTrayIcon);
+                    updateTrayDigits(trayMinutesText);
 
                     System.out.println(trayMinutesText);
                 }));
@@ -408,6 +402,8 @@ public class Main extends Application {
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
+        Integer _minutes = Integer.parseInt(workMinutesText.getText()) -1;
+        updateTrayDigits(_minutes.toString());
         trayTimerCounter = workForMinutes;
         trayTimer.playFromStart();
         workPeriodTimeLine.playFromStart();
@@ -415,7 +411,7 @@ public class Main extends Application {
 
     /* break period */
     public void showBreakPeriodStages() {
-        trayDigits.setText("00");
+        updateTrayDigits("00");
         trayTimer.pause();
 
         timeoutStages.forEach(s -> s.getStage().show());
@@ -432,12 +428,27 @@ public class Main extends Application {
         appContainter.toFront();
     }
 
-    public void pauseApp() {
-        timeoutStages.forEach(s -> s.getStage().hide());
+    public void restartApp() {
+        trayTimer.play();
+        workPeriodTimeLine.play();
+    }
 
-        breakPeriodTimeline.pause();
+    public void pauseApp() {
+//        timeoutStages.forEach(s -> s.getStage().hide());
+//        breakPeriodTimeline.pause();
+//        displayTimer.pause();
+
         workPeriodTimeLine.pause();
-        displayTimer.pause();
         trayTimer.pause();
+    }
+
+    public void updateTrayDigits(String minutes) {
+        trayDigits.setText(minutes);
+
+        /* remake image */
+        SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
+
+        /* awt update trayIcon */
+        trayIcon.setImage(buffTrayIcon);
     }
 }
