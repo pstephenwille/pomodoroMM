@@ -111,7 +111,7 @@ public class Main extends Application {
                 /* user has submitted the form, set the values and,
                 * start the app */
 
-                /* stop to reset valuse */
+                /* stop to reset values */
                 if (timeoutStages.size() > 0) pauseApp();
 
                 /* if not already milliseconds */
@@ -152,6 +152,7 @@ public class Main extends Application {
 
     public void makeFormFields() {
         ChangeListener parseField = (observable, oldValue, newValue) -> {
+            /* parse fieldID form event string */
             String fieldID = observable.toString().split(" ")[2].split("=")[1].replace(",", "");
 
             String _digits = newValue.toString().replaceAll("\\D+", "");

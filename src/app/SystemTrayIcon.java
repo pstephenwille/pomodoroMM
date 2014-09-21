@@ -46,15 +46,16 @@ public class SystemTrayIcon extends Main {
             buffTrayIcon = new BufferedImage(16, 16, 2);
             SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
 
+            /* tray popup events */
             listener = e ->
             {
                 command = e.getActionCommand().toLowerCase();
                 System.out.println(command);
                 if (command.equals("pause")) {
-                    Platform.runLater(() -> pauseApp());
+                    Platform.runLater(() -> pauseApp());/*fx thread */
                 }
                 if (command.equals("restart")) {
-                    Platform.runLater(() -> restartApp());/*fx thread */
+                    Platform.runLater(() -> restartApp());
                 }
                 if (command.equals("reset")) {
                     Platform.runLater(() -> {
@@ -102,7 +103,7 @@ public class SystemTrayIcon extends Main {
             try {
                 sysTray.add(trayIcon);
             } catch (AWTException except) {
-//                app.close();
+                app.close();
             }
         }
     }

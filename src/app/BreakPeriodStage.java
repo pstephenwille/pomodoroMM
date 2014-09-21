@@ -26,7 +26,7 @@ public class BreakPeriodStage extends Stage {
 
         Rectangle2D bounds = screen.getBounds();
 
-        /* put countdown clock on primary monitor */
+        /* put the countdown clock on primary monitor */
         if (screen.hashCode() == Screen.getPrimary().hashCode()) {
             breakTimerLbl.setId("breakTimerLbl");
             layout.getChildren().addAll(breakTimerLbl);
