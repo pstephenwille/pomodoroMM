@@ -9,6 +9,7 @@ import javafx.scene.layout.StackPane;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.geom.Arc2D;
 import java.awt.image.BufferedImage;
 
 public class SystemTrayIcon extends Main {
@@ -19,7 +20,7 @@ public class SystemTrayIcon extends Main {
     Label trayDigits;
     Scene trayScene;
     BufferedImage buffTrayIcon;
-    WritableImage wim = new WritableImage(16, 16);
+    WritableImage wim;
     TrayIcon trayIcon = null;
 
 
@@ -28,10 +29,15 @@ public class SystemTrayIcon extends Main {
         if (SystemTray.isSupported() && sysTray == null) {
             sysTray = SystemTray.getSystemTray();
 
+            Double width = sysTray.getTrayIconSize().getWidth();
+            Double height = sysTray.getTrayIconSize().getHeight();
+;
+            wim = new WritableImage(width.intValue(), height.intValue());
             /* fx thread: set up tray digits */
             StackPane trayPane = new StackPane();
-            trayPane.setMinWidth(16.0);
-            trayPane.setMinHeight(16.0);
+            trayPane.setMinWidth(width);
+            trayPane.setMinHeight(height);
+
             trayPane.setStyle("-fx-background-color: #000000;");
             trayPane.setOpacity(0.8);
 
@@ -43,7 +49,7 @@ public class SystemTrayIcon extends Main {
             trayScene = new Scene(trayPane, null);
 
             /* awt thread: make tray icon */
-            buffTrayIcon = new BufferedImage(16, 16, 2);
+            buffTrayIcon = new BufferedImage(width.intValue(), height.intValue(), 2);
             SwingFXUtils.fromFXImage(trayScene.snapshot(wim), buffTrayIcon);
 
             /* tray popup events */
