@@ -33,8 +33,8 @@ public class SystemTrayIcon extends Main {
             wim = new WritableImage(width.intValue(), height.intValue());
             /* fx thread: set up tray digits */
             StackPane trayPane = new StackPane();
-            trayPane.setMinWidth(width);
-            trayPane.setMinHeight(height);
+            trayPane.setMaxWidth(width);
+            trayPane.setMaxHeight(height);
 
             trayPane.setStyle("-fx-background-color: #000000;");
             trayPane.setOpacity(0.8);
