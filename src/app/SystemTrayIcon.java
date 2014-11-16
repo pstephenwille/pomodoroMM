@@ -57,13 +57,12 @@ public class SystemTrayIcon extends Main {
                 command = e.getActionCommand().toLowerCase();
                 if (command.equals("pause")) {
                     Platform.runLater(() -> {
-
-                        changeColor("pauseColor");
+                        changeColor(pauseColor);
                         pauseApp();
                     });/*fx thread */
                 }
                 if (command.equals("restart")) {
-                    changeColor("workingColor");
+                    changeColor(workingColor);
 
                     Platform.runLater(() -> restartApp());
                 }
@@ -80,7 +79,7 @@ public class SystemTrayIcon extends Main {
 
                     Platform.runLater(() -> {/* fx thread */
                         timeoutStages.forEach(s -> s.getStage().close());
-                        changeColor("offColor");
+                        changeColor(offColor);
 
                         app.close();
                     });
