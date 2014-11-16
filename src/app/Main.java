@@ -17,6 +17,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -47,14 +48,17 @@ public class Main extends Application {
     TextField opacityText = new TextField();
     TextField workMinutesText = new TextField();
     TrayIcon trayIcon = null;
-    Stage appContainter = new Stage();
+    Stage appContainer = new Stage();
     String minutesText;
     String secondsText;
     String millisText;
     String trayMinutesText;
     Long trayCycleMillis = 15000L;
     SystemTrayIcon tray;
-
+    String pauseColor = "--rgb=100,100,100";
+    String onBreakColor = "--rgb=00,100,00";
+    String workingColor = "--rgb=100,100,00";
+    String offColor = "--rgb=00,00,00";
 
     public static void main(String[] args) {
         launch(args);
@@ -62,6 +66,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage app) throws Exception {
+
         this.app = app;
 
         makeFormFields();
@@ -307,6 +312,8 @@ public class Main extends Application {
 
     /* work period */
     public void hideBreakPeriodStages() {
+        changeColor(workingColor);
+
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
 
@@ -319,6 +326,8 @@ public class Main extends Application {
 
     /* break period */
     public void showBreakPeriodStages() {
+        changeColor(onBreakColor);
+
         updateTrayDigits("00");
         trayTimer.pause();
 
@@ -333,7 +342,7 @@ public class Main extends Application {
 
         breakPeriodTimeline.playFromStart();
 
-        appContainter.toFront();
+        appContainer.toFront();
     }
 
     public void restartApp() {
@@ -355,4 +364,13 @@ public class Main extends Application {
         tray.trayIcon.setImage(tray.buffTrayIcon);
     }
 
+    public void changeColor(String color) {
+        Platform.runLater(()->{
+            try {
+                String[] cmmd = {"cmd", "/c", "cd C:\\Program Files (x86)\\Blink1-tool && blink1-tool "+ color};
+                Process p = Runtime.getRuntime().exec(cmmd);
+            } catch (IOException e)
+                { System.out.println(e); }
+            });
+        }
 }

@@ -52,9 +52,13 @@ public class SystemTrayIcon extends Main {
                 command = e.getActionCommand().toLowerCase();
                 System.out.println(command);
                 if (command.equals("pause")) {
+                    changeColor(pauseColor);
+
                     Platform.runLater(() -> pauseApp());/*fx thread */
                 }
                 if (command.equals("restart")) {
+                    changeColor(workingColor);
+
                     Platform.runLater(() -> restartApp());
                 }
                 if (command.equals("reset")) {
@@ -66,10 +70,14 @@ public class SystemTrayIcon extends Main {
                     });
                 }
                 if (command.equals("exit")) {
+                    changeColor(offColor);
+
                     sysTray.remove(trayIcon);/* awt thread */
 
                     Platform.runLater(() -> {/* fx thread */
                         timeoutStages.forEach(s -> s.getStage().close());
+                        changeColor(offColor);
+
                         app.close();
                     });
                 }
