@@ -377,7 +377,6 @@ public class Main extends Application {
     }
 
     public void changeColor(String color) {
-
         Platform.runLater(() -> {
             try {
                 String[] cmmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
