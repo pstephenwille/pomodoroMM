@@ -59,6 +59,8 @@ public class Main extends Application {
     String onBreakColor = "--rgb=00,100,00";
     String workingColor = "--rgb=100,00,00";
     String offColor = "--rgb=00,00,00";
+    String blinkPath = "";
+
 
     public static void main(String[] args) {
         launch(args);
@@ -68,6 +70,8 @@ public class Main extends Application {
     public void start(Stage app) throws Exception {
 
         this.app = app;
+
+        setBlinkPath();
 
         makeFormFields();
 
@@ -304,8 +308,6 @@ public class Main extends Application {
                     trayMinutesText = _minutes.toString();
 
                     updateTrayDigits(trayMinutesText);
-
-                    System.out.println(trayMinutesText);
                 }));
         trayTimer.setCycleCount(Timeline.INDEFINITE);
     }
@@ -364,13 +366,24 @@ public class Main extends Application {
         tray.trayIcon.setImage(tray.buffTrayIcon);
     }
 
-    public void changeColor(String color) {
-        Platform.runLater(()->{
-            try {
-                String[] cmmd = {"cmd", "/c", "cd C:\\Program Files (x86)\\Blink1-tool && blink1-tool "+ color};
-                Process p = Runtime.getRuntime().exec(cmmd);
-            } catch (IOException e)
-                { System.out.println(e); }
-            });
+    public void setBlinkPath() {
+        String[] path = System.getenv("PATH").split(";");
+        for (int i = 0; i < path.length; i++) {
+            if (path[i].matches("(?i:.*blink1-tool.*)")) {
+                blinkPath = path[i];
+            }
         }
+    }
+
+    public void changeColor(String color) {
+
+        Platform.runLater(() -> {
+            try {
+                String[] cmmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
+                Process p = Runtime.getRuntime().exec(cmmd);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+        });
+    }
 }

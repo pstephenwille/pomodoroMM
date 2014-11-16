@@ -56,7 +56,6 @@ public class SystemTrayIcon extends Main {
             listener = e ->
             {
                 command = e.getActionCommand().toLowerCase();
-                System.out.println(command);
                 if (command.equals("pause")) {
                     changeColor(pauseColor);
 
