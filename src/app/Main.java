@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
+/* wille, 11/16/14
+* */
 public class Main extends Application {
     static Double opacity = 0.8;
     static List<Screen> allScreens;
@@ -69,7 +70,7 @@ public class Main extends Application {
     @Override
     public void start(Stage app) throws Exception {
 
-        this.app = app;
+        Main.app = app;
 
         setBlinkPath();
 

@@ -9,7 +9,6 @@ import javafx.scene.layout.StackPane;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.geom.Arc2D;
 import java.awt.image.BufferedImage;
 
 public class SystemTrayIcon extends Main {
@@ -31,7 +30,6 @@ public class SystemTrayIcon extends Main {
 
             Double width = sysTray.getTrayIconSize().getWidth();
             Double height = sysTray.getTrayIconSize().getHeight();
-;
             wim = new WritableImage(width.intValue(), height.intValue());
             /* fx thread: set up tray digits */
             StackPane trayPane = new StackPane();
