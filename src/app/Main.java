@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/* wille, 11/16/14
-* */
+
 public class Main extends Application {
     static Double opacity = 0.8;
     static List<Screen> allScreens;
@@ -54,7 +53,7 @@ public class Main extends Application {
     String secondsText;
     String millisText;
     String trayMinutesText;
-    Long trayCycleMillis = 15000L;
+    Long trayCycleMillis = 1000L;
     SystemTrayIcon tray;
     String pauseColor = "--rgb=100,100,00";
     String onBreakColor = "--rgb=00,100,00";
@@ -300,12 +299,16 @@ public class Main extends Application {
                 }));
         displayTimer.setCycleCount(Timeline.INDEFINITE);
 
-        /* update tray clock every 30 seconds */
+        /* update tray clock */
         trayTimer = new Timeline(new KeyFrame(
                 Duration.millis(trayCycleMillis),
                 e -> {
                     trayTimerCounter -= trayCycleMillis;
                     Long _minutes = TimeUnit.MILLISECONDS.toMinutes(trayTimerCounter) % 60;
+
+                    if (_minutes < 1) {
+                        _minutes = TimeUnit.MILLISECONDS.toSeconds(trayTimerCounter) % 60;
+                    }
                     trayMinutesText = _minutes.toString();
 
                     updateTrayDigits(trayMinutesText);
@@ -377,7 +380,6 @@ public class Main extends Application {
     }
 
     public void changeColor(String color) {
-        System.out.println("color-"+ color);
         Platform.runLater(() -> {
             try {
                 String[] cmmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
