@@ -41,7 +41,7 @@ public class SystemTrayIcon extends Main {
             trayPane.setOpacity(0.8);
 
             trayDigits = new javafx.scene.control.Label();
-            trayDigits.setStyle("-fx-text-fill: #FFFFFF; -fx-hgap: 0; -fx-vgap:0; -fx-text-alignment: center;");
+            trayDigits.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 12px; ");
             trayDigits.setOpacity(1);
 
             trayPane.getChildren().addAll(trayDigits);
