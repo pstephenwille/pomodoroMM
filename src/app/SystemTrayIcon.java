@@ -33,14 +33,15 @@ public class SystemTrayIcon extends Main {
             wim = new WritableImage(width.intValue(), height.intValue());
             /* fx thread: set up tray digits */
             StackPane trayPane = new StackPane();
-            trayPane.setMaxWidth(width);
-            trayPane.setMaxHeight(height);
+            trayPane.setMinWidth(width);
+            trayPane.setMinHeight(height);
+
 
             trayPane.setStyle("-fx-background-color: #000000;");
             trayPane.setOpacity(0.8);
 
             trayDigits = new javafx.scene.control.Label();
-            trayDigits.setStyle("-fx-text-fill: #FFFFFF");
+            trayDigits.setStyle("-fx-text-fill: #FFFFFF; -fx-hgap: 0; -fx-vgap:0; -fx-text-alignment: center;");
             trayDigits.setOpacity(1);
 
             trayPane.getChildren().addAll(trayDigits);
@@ -55,12 +56,14 @@ public class SystemTrayIcon extends Main {
             {
                 command = e.getActionCommand().toLowerCase();
                 if (command.equals("pause")) {
-                    changeColor(pauseColor);
+                    Platform.runLater(() -> {
 
-                    Platform.runLater(() -> pauseApp());/*fx thread */
+                        changeColor("pauseColor");
+                        pauseApp();
+                    });/*fx thread */
                 }
                 if (command.equals("restart")) {
-                    changeColor(workingColor);
+                    changeColor("workingColor");
 
                     Platform.runLater(() -> restartApp());
                 }
@@ -73,13 +76,11 @@ public class SystemTrayIcon extends Main {
                     });
                 }
                 if (command.equals("exit")) {
-                    changeColor(offColor);
-
                     sysTray.remove(trayIcon);/* awt thread */
 
                     Platform.runLater(() -> {/* fx thread */
                         timeoutStages.forEach(s -> s.getStage().close());
-                        changeColor(offColor);
+                        changeColor("offColor");
 
                         app.close();
                     });
