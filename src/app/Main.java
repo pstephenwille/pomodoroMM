@@ -55,9 +55,9 @@ public class Main extends Application {
     String trayMinutesText;
     Long trayCycleMillis = 1000L;
     SystemTrayIcon tray;
-    String pauseColor = "--rgb=100,100,00";
-    String onBreakColor = "--rgb=00,100,00";
-    String workingColor = "--rgb=100,00,00";
+    String pauseColor = "--rgb=133,133,00";
+    String onBreakColor = "--rgb=00,133,00";
+    String workingColor = "--rgb=133,00,00";
     String offColor = "--rgb=00,00,00";
     String blinkPath = "";
 
