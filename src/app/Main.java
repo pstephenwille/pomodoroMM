@@ -60,6 +60,7 @@ public class Main extends Application {
     String workingColor = "--rgb=133,00,00";
     String offColor = "--rgb=00,00,00";
     String blinkPath = "";  
+    String os = System.getProperty("os.name");
 
 
     public static void main(String[] args) {
@@ -371,6 +372,7 @@ public class Main extends Application {
     }
 
     public void setBlinkPath() {
+        /*todo is this needed */
         String[] path = System.getenv("PATH").split(";");
         for (int i = 0; i < path.length; i++) {
             if (path[i].matches("(?i:.*blink1-tool.*)")) {
@@ -382,11 +384,11 @@ public class Main extends Application {
     public void changeColor(String color) {
         Platform.runLater(() -> {
             try {
-//                URL blinkTool = ClassLoader.getSystemResource("BLINK_TOOL");
-//                String[] cmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
-                String nixcmd = "sudo $BLINK1 "+ color;
-                System.out.println(nixcmd);
-                Process p = Runtime.getRuntime().exec(nixcmd);
+                String[] wincmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
+                String[] nixcmd = {"sudo $BLINK1 ", color};
+                String[] cmd = (os == "Linux")? nixcmd : wincmd;
+                
+                Process p = Runtime.getRuntime().exec(cmd);
             } catch (IOException e) {
                 System.out.println(e);
             }
