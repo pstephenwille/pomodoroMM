@@ -379,16 +379,18 @@ public class Main extends Application {
                 blinkPath = path[i];
             }
         }
+        System.out.println(path[0]);
     }
 
     public void changeColor(String color) {
         Platform.runLater(() -> {
             try {
                 String[] wincmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
-                String[] nixcmd = {"sudo $BLINK1 ", color};
+
+                String[] nixcmd = {"sudo $BLINK1 "+ color};
                 String[] cmd = (os == "Linux")? nixcmd : wincmd;
-                
-                Process p = Runtime.getRuntime().exec(cmd);
+                String[] ugh = {"bash", "-c", "sudo /home/stephen/Utils/blink1-tool "+ color};
+                Process p = Runtime.getRuntime().exec(ugh);
             } catch (IOException e) {
                 System.out.println(e);
             }
