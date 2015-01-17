@@ -59,7 +59,7 @@ public class Main extends Application {
     String onBreakColor = "--rgb=00,133,00";
     String workingColor = "--rgb=133,00,00";
     String offColor = "--rgb=00,00,00";
-    String blinkPath = "";
+    String blinkPath = "";  
 
 
     public static void main(String[] args) {
@@ -382,8 +382,11 @@ public class Main extends Application {
     public void changeColor(String color) {
         Platform.runLater(() -> {
             try {
-                String[] cmmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
-                Process p = Runtime.getRuntime().exec(cmmd);
+//                URL blinkTool = ClassLoader.getSystemResource("BLINK_TOOL");
+//                String[] cmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
+                String nixcmd = "sudo $BLINK1 "+ color;
+                System.out.println(nixcmd);
+                Process p = Runtime.getRuntime().exec(nixcmd);
             } catch (IOException e) {
                 System.out.println(e);
             }
