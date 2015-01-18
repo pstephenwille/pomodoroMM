@@ -374,6 +374,7 @@ public class Main extends Application {
     public void setBlinkPath() {
         /*todo is this needed */
         String[] path = System.getenv("PATH").split(";");
+        System.out.println(path[0]);
         for (int i = 0; i < path.length; i++) {
             if (path[i].matches("(?i:.*blink1-tool.*)")) {
                 blinkPath = path[i];
@@ -386,11 +387,10 @@ public class Main extends Application {
         Platform.runLater(() -> {
             try {
                 String[] wincmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
+                String[] nixcmd = {"bash", "-c", "sudo /home/stephen/Utils/blink1-tool "+ color};
+                String[] cmd = (os.equals("Linux"))? nixcmd : wincmd;
 
-                String[] nixcmd = {"sudo $BLINK1 "+ color};
-                String[] cmd = (os == "Linux")? nixcmd : wincmd;
-                String[] ugh = {"bash", "-c", "sudo /home/stephen/Utils/blink1-tool "+ color};
-                Process p = Runtime.getRuntime().exec(ugh);
+                Process p = Runtime.getRuntime().exec(cmd);
             } catch (IOException e) {
                 System.out.println(e);
             }
