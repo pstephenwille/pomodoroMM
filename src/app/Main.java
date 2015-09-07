@@ -172,7 +172,7 @@ public class Main extends Application {
 
             if (_digits.length() > 0) {
                 if (fieldID.equals("workMinutes")) {
-                    workForMinutes = Long.parseLong(_digits);
+                    workForMinutes = Long.parseLong(_digits)
                 }
                 if (fieldID.equals("breakMinutes")) {
                     breakForMinutes = Long.parseLong(_digits);
