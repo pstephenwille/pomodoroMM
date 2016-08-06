@@ -1,8 +1,6 @@
 <component name="libraryTable">
   <library name="JavaFXApp">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/JavaFXApp.jar!/" />
-    </CLASSES>
+    <CLASSES />
     <JAVADOC />
     <SOURCES />
   </library>

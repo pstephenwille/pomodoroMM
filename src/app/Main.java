@@ -110,8 +110,8 @@ public class Main extends Application {
                 if (timeoutStages.size() == 0) {
                     app.close();
                 } else {
-                    app.setMaxWidth(0.0);
-                    app.setMaxHeight(0.0);
+                    app.setMaxWidth(0.1);
+                    app.setMaxHeight(0.1);
                     app.setOpacity(0.0);
                 }
             }
@@ -149,7 +149,9 @@ public class Main extends Application {
                 makeSysTrayIcon();
                 makeBreakScreens();
                 makeTimers();
-                hideBreakPeriodStages();
+//                hideBreakPeriodStages();
+
+                showBreakPeriodStages();
             }
         });
 
@@ -383,17 +385,29 @@ public class Main extends Application {
         System.out.println(path[0]);
     }
 
-    public void changeColor(String color) {
-        Platform.runLater(() -> {
-            try {
-                String[] wincmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
-                String[] nixcmd = {"bash", "-c", "sudo /home/stephen/Utils/blink1-tool "+ color};
-                String[] cmd = (os.equals("Linux"))? nixcmd : wincmd;
 
+ public void changeColor(String color) {
+        Platform.runLater(() -> {
+            String[] cmd = null;
+            String[] wincmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
+            String[] nixcmd = {"bash", "-c", "sudo /home/stephen/Utils/blink1-tool " + color};
+            String[] maccmd = {"bash", "-c", "sudo ~/blink1-tool " + color};
+
+            if (os.contains("Windows")) {
+                cmd = wincmd;
+            }
+            if (os.contains("Linux")) {
+                cmd = nixcmd;
+            }
+            if (os.contains("Mac")) {
+                cmd = maccmd;
+            }
+            try {
                 Process p = Runtime.getRuntime().exec(cmd);
             } catch (IOException e) {
-                System.out.println(e);
+                System.out.println("...........IOex " + e);
             }
         });
+
     }
 }

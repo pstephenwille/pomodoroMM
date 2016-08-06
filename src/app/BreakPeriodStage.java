@@ -19,7 +19,6 @@ public class BreakPeriodStage extends Stage {
 
 
     public BreakPeriodStage(final Screen screen, Double opacity, Label breakTimerLbl) {
-
         setStage(new Stage());
 
         layout = new StackPane();
@@ -31,6 +30,7 @@ public class BreakPeriodStage extends Stage {
             breakTimerLbl.setId("breakTimerLbl");
             layout.getChildren().addAll(breakTimerLbl);
         }
+
 
         layout.setStyle("-fx-background-color: rgba(0, 0, 0," + opacity + ");");
 
