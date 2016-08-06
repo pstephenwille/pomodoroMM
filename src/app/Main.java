@@ -59,7 +59,7 @@ public class Main extends Application {
     String onBreakColor = "--rgb=00,133,00";
     String workingColor = "--rgb=133,00,00";
     String offColor = "--rgb=00,00,00";
-    String blinkPath = "";  
+    String blinkPath = "";
     String os = System.getProperty("os.name");
 
 
@@ -102,6 +102,7 @@ public class Main extends Application {
         scene.getStylesheets().add
                 (Main.class.getResource("main.css").toExternalForm());
 
+
         app.addEventHandler(KeyEvent.KEY_RELEASED, key ->
         {
             String code = key.getCode().toString().toLowerCase();
@@ -116,13 +117,12 @@ public class Main extends Application {
                 }
             }
 
-
             if (code.equals("enter")) {
                 /* user has submitted the form, set the values and,
                 * start the app */
 
                 /* stop to reset values */
-                if (timeoutStages.size() > 0) pauseApp();
+                if (timeoutStages.size() > 0) { pauseApp(); }
 
                 /* if not already milliseconds */
                 if (workForMinutes.toString().length() < 4) {
@@ -142,20 +142,25 @@ public class Main extends Application {
                     });
                 }
                 /* leave app container running, to give the stages something to run in. */
-                app.setMaxWidth(0.0);
-                app.setMaxHeight(0.0);
-                app.setOpacity(0.0);
+                app.setMaxWidth(0.1);
+                try{
+                    app.setMaxHeight(0.1);
+                }catch (Exception e){
+                    System.out.println(".........."+ e);
+                }
+                app.setOpacity(0.5);
 
-                makeSysTrayIcon();
-                makeBreakScreens();
-                makeTimers();
-                hideBreakPeriodStages();
+//                makeSysTrayIcon();
+//                makeBreakScreens();
+//                makeTimers();
+//                hideBreakPeriodStages();
             }
         });
 
-
         app.setTitle("Pomodoro - multi monitor");
+
         app.setScene(scene);
+
         app.initStyle(StageStyle.UTILITY);
         app.show();
     }
@@ -319,7 +324,7 @@ public class Main extends Application {
 
     /* work period */
     public void hideBreakPeriodStages() {
-        changeColor(workingColor);
+//        changeColor(workingColor);
 
         timeoutStages.forEach(s -> s.getStage().hide());
         displayTimer.pause();
@@ -333,7 +338,7 @@ public class Main extends Application {
 
     /* break period */
     public void showBreakPeriodStages() {
-        changeColor(onBreakColor);
+//        changeColor(onBreakColor);
 
         updateTrayDigits("00");
         trayTimer.pause();
@@ -385,15 +390,26 @@ public class Main extends Application {
 
     public void changeColor(String color) {
         Platform.runLater(() -> {
-            try {
-                String[] wincmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
-                String[] nixcmd = {"bash", "-c", "sudo /home/stephen/Utils/blink1-tool "+ color};
-                String[] cmd = (os.equals("Linux"))? nixcmd : wincmd;
+            String[] cmd = null;
+            String[] wincmd = {"cmd", "/c", "cd " + blinkPath + " && blink1-tool " + color};
+            String[] nixcmd = {"bash", "-c", "sudo /home/stephen/Utils/blink1-tool " + color};
+            String[] maccmd = {"bash", "-c", "sudo ~/blink1-tool " + color};
 
+            if (os.contains("Windows")) {
+                cmd = wincmd;
+            }
+            if (os.contains("Linux")) {
+                cmd = nixcmd;
+            }
+            if (os.contains("Mac")) {
+                cmd = maccmd;
+            }
+            try {
                 Process p = Runtime.getRuntime().exec(cmd);
             } catch (IOException e) {
-                System.out.println(e);
+                System.out.println("...........IOex " + e);
             }
         });
+
     }
 }
