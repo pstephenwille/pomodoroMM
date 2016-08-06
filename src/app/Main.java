@@ -142,8 +142,8 @@ public class Main extends Application {
                     });
                 }
                 /* leave app container running, to give the stages something to run in. */
-                app.setMaxWidth(0.0);
-                app.setMaxHeight(0.0);
+                app.setMaxWidth(0.1);
+                app.setMaxHeight(0.1);
                 app.setOpacity(0.0);
 
                 makeSysTrayIcon();
